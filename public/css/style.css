@@ -1,0 +1,107 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fafafa;
+    color: #262626;
+}
+
+/* Header & Logo */
+.main-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dbdbdb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 40px;
+}
+
+.logo {
+    font-size: 28px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* CSS3 Text-shadow */
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.main-nav a {
+    text-decoration: none;
+    color: #262626;
+    font-weight: bold;
+}
+
+/* Layout */
+.main-container {
+    display: flex;
+    max-width: 935px;
+    margin: 30px auto;
+    gap: 30px;
+}
+
+.feed-section {
+    flex: 2;
+}
+
+.sidebar {
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #dbdbdb;
+    padding: 15px;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+/* Post Styling */
+.post {
+    background-color: #ffffff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px; /* CSS3 Border-radius */
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    gap: 10px;
+}
+
+.avatar {
+    border-radius: 50%; /* תמונת פרופיל עגולה */
+}
+
+.post-actions {
+    padding: 10px 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-like, .btn-comment {
+    background: none;
+    border: 1px solid #dbdbdb;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* CSS3 Transition */
+}
+
+.btn-like:hover {
+    background-color: #ffe6e6;
+    transform: scale(1.05);
+}
+
+.post-caption {
+    padding: 0 15px 15px 15px;
+}
+
+/* Footer */
+.main-footer {
+    text-align: center;
+    padding: 20px;
+    color: #8e8e8e;
+    font-size: 12px;
+}
