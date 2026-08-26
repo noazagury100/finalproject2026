@@ -29,13 +29,16 @@ function renderPosts(posts) {
 
     feedContainer.innerHTML = '';
 
+    // תמונת אווטאר ברירת מחדל ב-SVG מקומי למניעת שגיאות רשת ותמונות שבורות
+    const defaultAvatar = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="%23ccc"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
+
     posts.forEach(post => {
         const article = document.createElement('article');
         article.classList.add('post');
 
         let mediaHTML = '';
         if (post.mediaType === 'image' && post.mediaUrl) {
-            mediaHTML = `<img src="${post.mediaUrl}" alt="פוסט" style="width:100%;">`;
+            mediaHTML = `<img src="${post.mediaUrl}" alt="פוסט" style="width:100%;" onerror="this.style.display='none'">`;
         } else if (post.mediaType === 'video' && post.mediaUrl) {
             mediaHTML = `
                 <video controls width="100%">
@@ -45,15 +48,15 @@ function renderPosts(posts) {
         }
 
         article.innerHTML = `
-            <header class="post-header">
-                <img src="https://via.placeholder.com/40" alt="פרופיל" class="avatar">
-                <span class="username">${post.author ? post.author.username : 'משתמש'}</span>
+            <header class="post-header" style="display:flex; align-items:center; gap:10px; padding:10px;">
+                <img src="${defaultAvatar}" alt="פרופיל" class="avatar" style="width:40px; height:40px; border-radius:50%;">
+                <span class="username" style="font-weight:bold;">${post.author ? post.author.username : 'משתמש'}</span>
             </header>
             <div class="post-caption" style="padding: 10px 15px;">
                 <p>${post.text || ''}</p>
             </div>
             <div class="post-media">${mediaHTML}</div>
-            <div class="post-actions">
+            <div class="post-actions" style="padding:10px;">
                 <button class="btn-like">❤️ לייק</button>
             </div>
         `;
