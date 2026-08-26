@@ -25,8 +25,8 @@ app.get('/', (req, res) => {
 app.get('/init-db', async (req, res) => {
     try {
         const testUser = await User.create({
-            username: 'itay_test',
-            email: 'itay@example.com',
+            username: 'noa_test',
+            email: 'noa@example.com',
             password: '123456password',
             city: 'Rishon LeZion'
         });
@@ -37,6 +37,10 @@ app.get('/init-db', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+const postRoutes = require('./routes/postRoutes');
+app.use('/api/posts', postRoutes);
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
