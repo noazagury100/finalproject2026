@@ -22,6 +22,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
 
 // נתיבי API
 app.use('/api/posts', postRoutes);
