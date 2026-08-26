@@ -2,9 +2,11 @@ const express = require('express');
 const path = require('path');
 require('dotenv').config();
 
-// ייבוא החיבור ל-DB והמודל
 const connectDB = require('./config/db');
 const User = require('./models/User');
+
+const postRoutes = require('./routes/postRoutes');
+const groupRoutes = require('./routes/groups');
 
 const app = express();
 
@@ -21,14 +23,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
 
-// נתיב לבדיקת יצירת ה-DB והכנסת משתמש ראשון
+// נתיבי API
+app.use('/api/posts', postRoutes);
+app.use('/api/groups', groupRoutes);
+
+// נתיב לבדיקה
 app.get('/init-db', async (req, res) => {
     try {
         const testUser = await User.create({
             username: 'noa_test',
-            email: 'noa@example.com',
-            password: '123456password',
-            city: 'Rishon LeZion'
+            password: '123456password'
         });
         res.json({ message: 'DB and User Created Successfully!', user: testUser });
     } catch (err) {
@@ -37,12 +41,6 @@ app.get('/init-db', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
-const postRoutes = require('./routes/postRoutes');
-app.use('/api/posts', postRoutes);
-
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
-const groupRoutes = require('./routes/groups');
-app.use('/api/groups', groupRoutes);

@@ -8,65 +8,70 @@
 </head>
 <body>
 
-    <!-- סרגל עליון -->
+    <!-- Header סמנטי לפי דרישה 31 -->
     <header class="main-header">
-        <h1 class="logo">Instagram</h1>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="#">פיד</a></li>
-                <li><a href="#">אקספלור</a></li>
-                <li><a href="#">פרופיל</a></li>
-            </ul>
-        </nav>
+        <div class="header-content">
+            <h1 class="logo">Instagram</h1>
+            <!-- Nav סמנטי לפי דרישה 31 -->
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" class="active">פיד</a></li>
+                    <li><a href="#">קבוצות</a></li>
+                    <li><a href="#">פרופיל</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
-    <!-- תוכן מרכזי -->
-    <main class="main-container">
+    <div class="main-layout">
         
-        <!-- אזור הפוסטים -->
+        <!-- Section סמנטי לפי דרישה 31 -->
         <section class="feed-section">
             
-            <!-- דוגמה לפוסט וידאו -->
-            <article class="post">
-                <header class="post-header">
-                    <img src="https://via.placeholder.com/40" alt="תמונת פרופיל" class="avatar">
-                    <span class="username">user_demo</span>
-                </header>
-                
-                <div class="post-media">
-                    <video controls width="100%">
-                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                        הבדפדפן שלך לא תומך בוידאו.
-                    </video>
-                </div>
+            <!-- טופס יצירת פוסט (דרישה 21 & 22) -->
+            <div class="create-post-card">
+                <h3>שתף פוסט חדש</h3>
+                <form id="createPostForm">
+                    <div class="form-group">
+                        <select id="postTypeInput" required>
+                            <option value="text">✍️ טקסט בלבד</option>
+                            <option value="image">📸 תמונה</option>
+                            <option value="video">🎥 סרטון</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="postCaptionInput" placeholder="מה תרצי לשתף?" required>
+                    </div>
+                    <div class="form-group" id="urlInputContainer">
+                        <input type="url" id="postUrlInput" placeholder="הדבק קישור למדיה (תמונה/וידאו)">
+                    </div>
+                    <button type="submit" class="submit-btn">פרסם פוסט</button>
+                </form>
+            </div>
 
-                <div class="post-actions">
-                    <button class="btn-like">❤️ לייק</button>
-                    <button class="btn-comment">💬 תגובה</button>
-                </div>
-
-                <div class="post-caption">
-                    <p><strong>user_demo</strong> פוסט ראשון ברשת החברתית שלנו!</p>
-                </div>
-            </article>
-
+            <!-- מכל הפוסטים הדינמיים (AJAX - דרישה 30) -->
+            <div id="feedContainer">
+                <!-- הפוסטים יישתלו כאן ב-JS -->
+            </div>
         </section>
 
-        <!-- סרגל צדדי (קבוצות מומלצות / מידע) -->
-        <aside class="sidebar">
-            <h3>קבוצות מומלצות</h3>
-            <ul>
-                <li>קבוצת תכנות</li>
-                <li>קבוצת מוזיקה</li>
-            </ul>
+        <!-- Aside סמנטי לפי דרישה 31 -->
+        <aside class="sidebar-section">
+            <div class="sidebar-card">
+                <h3>קבוצות מומלצות</h3>
+                <ul class="groups-list">
+                    <!-- ייטען ב-AJAX מ-groupsRoutes -->
+                </ul>
+            </div>
         </aside>
 
-    </main>
+    </div>
 
-    <!-- פוטר -->
+    <!-- Footer סמנטי לפי דרישה 31 -->
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project - נועה, איתי ותומר</p>
+        <p>&copy; 2026 Instagram Project - פרויקט גמר</p>
     </footer>
+
     <script src="/js/feed.js"></script>
 </body>
 </html>

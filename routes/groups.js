@@ -15,8 +15,13 @@ router.get('/', async (req, res) => {
 // יצירת קבוצה חדשה
 router.post('/', async (req, res) => {
     try {
-        const { name, description, admin } = req.body;
-        const newGroup = await Group.create({ name, description, admin });
+        const { name, admin } = req.body;
+        
+        // אם לא נשלח admin, תיווצר קבוצה בלי להכשיל את המסד
+        const groupData = { name };
+        if (admin) groupData.admin = admin;
+
+        const newGroup = await Group.create(groupData);
         res.status(201).json(newGroup);
     } catch (err) {
         res.status(400).json({ error: err.message });
