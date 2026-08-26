@@ -1,6 +1,7 @@
-// טעינת הנתונים א-סינכרונית עם טעינת העמוד
+
 document.addEventListener('DOMContentLoaded', () => {
     loadPostsViaAjax();
+    loadGroupsViaAjax();
 });
 
 
@@ -18,6 +19,24 @@ async function loadPostsViaAjax() {
         console.error('AJAX Error:', error);
     }
 }
+
+
+async function loadGroupsViaAjax() {
+    try {
+        const response = await fetch('/api/groups');
+        if (!response.ok) return;
+        
+        const groups = await response.json();
+        const sidebarList = document.querySelector('.sidebar ul');
+        
+        if (sidebarList && groups.length > 0) {
+            sidebarList.innerHTML = groups.map(g => `<li>👥 ${g.name}</li>`).join('');
+        }
+    } catch (err) {
+        console.error('Error fetching groups:', err);
+    }
+}
+
 
 function renderPosts(posts) {
     const feedContainer = document.querySelector('.feed-section');
