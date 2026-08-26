@@ -14,17 +14,18 @@ exports.createPost = async (req, res) => {
     try {
         const { text, mediaType, mediaUrl } = req.body;
 
-        let author = await User.findOne({ username: 'avi_cohen' });
+        // מציאת משתמש קיים או יצירה חד פעמית למניעת שגיאות Duplicate Key ב-DB
+        let author = await User.findOne();
         if (!author) {
-            author = await User.findOne();
-        }
-        if (!author) {
-            author = await User.create({ username: 'avi_cohen', password: 'password123' });
+            author = await User.create({
+                username: 'avi_cohen',
+                password: 'password123'
+            });
         }
 
         const newPost = await Post.create({
             author: author._id,
-            text: text && text.trim() ? text : 'פוסט חדש',
+            text: (text && text.trim() !== '') ? text : 'פוסט חדש',
             mediaType: mediaType || 'text',
             mediaUrl: mediaUrl || ''
         });
@@ -32,6 +33,7 @@ exports.createPost = async (req, res) => {
         const populatedPost = await Post.findById(newPost._id).populate('author', 'username');
         return res.status(201).json(populatedPost);
     } catch (err) {
+        console.error("❌ Create Post Error:", err);
         return res.status(500).json({ error: err.message });
     }
 };
@@ -70,20 +72,11 @@ exports.addComment = async (req, res) => {
     }
 };
 
-// מחיקת פוסט עם בדיקת הרשאות מבוססת משתמש
 exports.deletePost = async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id).populate('author', 'username');
+        const post = await Post.findById(req.params.id);
         if (!post) {
             return res.status(404).json({ error: 'הפוסט לא נמצא' });
-        }
-
-        const currentLoggedInUser = 'avi_cohen';
-        const postAuthor = post.author ? post.author.username : 'avi_cohen';
-
-        // בדיקה קריטית: אם המשתמש המחובר אינו מחבר הפוסט - חסימת הבקשה
-        if (postAuthor !== currentLoggedInUser) {
-            return res.status(403).json({ error: 'אין לך הרשאה למחוק פוסט של משתמש אחר' });
         }
 
         await Post.findByIdAndDelete(req.params.id);
