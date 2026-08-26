@@ -1,21 +1,28 @@
 const mongoose = require('mongoose');
-const User = require('./models/User');
-const Post = require('./models/Post');
 require('dotenv').config();
 
-const seedDB = async () => {
+const connectDB = require('./config/db');
+const User = require('./models/User');
+const Post = require('./models/Post');
+const Group = require('./models/Group');
+
+const seedData = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/instagram_db');
-        
-        // ניקוי נתונים קודמים
+        await connectDB();
+
         await User.deleteMany({});
         await Post.deleteMany({});
+        await Group.deleteMany({});
 
-        // יצירת משתמשים לדוגמה
-        const user1 = await User.create({ username: 'noa_style', password: '123' });
-        const user2 = await User.create({ username: 'itay_dev', password: '123' });
+        // יצירת משתמשים עם השם avi_cohen
+        const user1 = await User.create({ username: 'avi_cohen', password: 'password123' });
+        const user2 = await User.create({ username: 'itay_dev', password: 'password123' });
 
-        // יצירת פוסטים מסוגים שונים (טקסט, תמונה, וידאו)
+        // יצירת קבוצות
+        const group1 = await Group.create({ name: 'קבוצת תכנות', admin: user1._id });
+        const group2 = await Group.create({ name: 'קבוצת מוזיקה', admin: user2._id });
+
+        // יצירת פוסטים עם תמונות תקינות
         await Post.create([
             {
                 author: user1._id,
@@ -24,24 +31,24 @@ const seedDB = async () => {
             },
             {
                 author: user1._id,
-                text: 'משהו נחמד לראות בוידאו 🎥',
+                text: 'משהו נחמד לראות בווידאו 🎥',
                 mediaType: 'video',
                 mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
             },
             {
                 author: user2._id,
-                text: 'תמונה ראשונה במערכת!',
+                text: 'תמונה ראשונה במערכת! 📸',
                 mediaType: 'image',
-                mediaUrl: 'https://via.placeholder.com/600x400'
+                mediaUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'
             }
         ]);
 
         console.log('✅ Seed Data Inserted Successfully!');
         process.exit();
     } catch (error) {
-        console.error('❌ Seed Error:', error);
+        console.error('❌ Error Seeding Data:', error);
         process.exit(1);
     }
 };
 
-seedDB();
+seedData();
