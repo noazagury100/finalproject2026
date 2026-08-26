@@ -20,6 +20,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
 
 // נתיב לבדיקת יצירת ה-DB והכנסת משתמש ראשון
 app.get('/init-db', async (req, res) => {
