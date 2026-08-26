@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Basic Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
 
 // נתיב לבדיקת יצירת ה-DB והכנסת משתמש ראשון
