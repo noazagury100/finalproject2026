@@ -25,6 +25,8 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 const groupRoutes = require('./routes/groupRoutes');
 app.use('/api/groups', groupRoutes);
+const statsRoutes = require('./routes/statsRoutes');
+app.use('/api/stats', statsRoutes);
 
 // נתיב לבדיקת יצירת ה-DB והכנסת משתמש ראשון
 app.get('/init-db', async (req, res) => {
