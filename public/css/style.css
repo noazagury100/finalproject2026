@@ -202,3 +202,27 @@ body {
     color: #8e8e8e;
     font-size: 12px;
 }
+
+/* CSS3 Font-face - טעינת פונט מותאם אישית (דרישה 32.iv) */
+@font-face {
+    font-family: 'CustomInstagramFont';
+    src: url('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxKKTU1Kg.woff2') format('woff2');
+}
+
+/* הפעלת הפונט המותאם אישית על הכותרות והלוגו */
+.logo, h2, h3 {
+    font-family: 'CustomInstagramFont', sans-serif;
+}
+
+/* CSS3 Multiple-columns - חלוקת הגלריה לעמודות מרובות (דרישה 32.iii) */
+.explore-gallery {
+    column-count: 3;
+    column-gap: 15px;
+}
+
+/* התאמה למסכים קטנים */
+@media (max-width: 600px) {
+    .explore-gallery {
+        column-count: 1;
+    }
+}
