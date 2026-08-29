@@ -1,31 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
     loadPostsViaAjax();
+    loadGroupsViaAjax();
     setupCreatePostForm();
 });
 
-// טעינת פוסטים משרת ה-API עם טיפול בשגיאות
+
 async function loadPostsViaAjax() {
     try {
         const response = await fetch('/api/posts');
-        if (!response.ok) {
-            throw new Error(`שגיאת שרת (${response.status})`);
-        }
+        if (!response.ok) throw new Error('שגיאה בטעינת הפוסטים');
 
         const posts = await response.json();
         renderPosts(posts);
     } catch (error) {
         console.error('AJAX Error:', error);
-        showFeedback('שגיאה בטעינת הפיד. ודא שהשרת פעיל.', 'error');
     }
 }
 
-// הצגת פוסטים במסך
+
+async function loadGroupsViaAjax() {
+    try {
+        const response = await fetch('/api/groups');
+        if (!response.ok) return;
+
+        const groups = await response.json();
+        const container = document.getElementById('recommendedGroupsContainer');
+        if (!container) return;
+
+        if (groups.length === 0) {
+            container.innerHTML = '<p style="font-size: 13px; color: #8e8e8e; margin-top: 8px;">אין קבוצות כרגע.</p>';
+            return;
+        }
+
+        container.innerHTML = groups.map(g => `
+            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #efefef;">
+                <strong style="font-size: 14px; color: #262626;">${g.name || 'קבוצת פיתוח'}</strong>
+                <p style="font-size: 12px; color: #8e8e8e; margin: 2px 0;">${g.description || 'קבוצה ברשת'}</p>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Groups Error:', error);
+    }
+}
+
+
 function renderPosts(posts) {
     const feedContainer = document.getElementById('feedContainer');
     if (!feedContainer) return;
 
     if (posts.length === 0) {
-        feedContainer.innerHTML = '<p style="text-align:center; color:#8e8e8e;">אין פוסטים להצגה כרגע.</p>';
+        feedContainer.innerHTML = '<p style="text-align:center; color:#8e8e8e; margin-top:20px;">אין פוסטים להצגה כרגע.</p>';
         return;
     }
 
@@ -94,28 +118,26 @@ function renderPosts(posts) {
     });
 }
 
-// לחיצה על לייק
+
 async function handleLike(postId) {
     try {
         const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
-        if (!response.ok) throw new Error('שגיאה בעדכון בלייק');
+        if (!response.ok) throw new Error('שגיאה בלייק');
 
         const data = await response.json();
         const countElement = document.getElementById(`like-count-${postId}`);
         if (countElement) countElement.innerText = data.likesCount;
     } catch (error) {
         console.error('Like Error:', error);
-        alert('לא ניתן לעדכן לייק כרגע.');
     }
 }
 
-// שליחת תגובה עם ולידציית קלט
+
 async function handleComment(event, postId) {
     event.preventDefault();
     const input = document.getElementById(`comment-input-${postId}`);
     const commentText = input ? input.value.trim() : '';
 
-    // ולידציה בצד לקוח (סעיף 29)
     if (!commentText) {
         alert('אנא הוסף תוכן לתגובה לפני השליחה.');
         return;
@@ -128,17 +150,16 @@ async function handleComment(event, postId) {
             body: JSON.stringify({ text: commentText })
         });
 
-        if (!response.ok) throw new Error('שגיאה בשליחת התגובה');
+        if (!response.ok) throw new Error('שגיאה בתגובה');
 
         input.value = '';
         await loadPostsViaAjax();
     } catch (error) {
         console.error('Comment Error:', error);
-        alert('שליחת התגובה נכשלה.');
     }
 }
 
-// יצירת פוסט חדש עם ולידציות
+
 function setupCreatePostForm() {
     const createPostForm = document.getElementById('createPostForm');
     if (!createPostForm) return;
@@ -150,7 +171,6 @@ function setupCreatePostForm() {
         const mediaUrl = document.getElementById('postUrlInput')?.value.trim() || '';
         const mediaType = document.getElementById('postTypeInput')?.value || 'text';
 
-        // ולידציית קלט בצד לקוח (סעיף 29)
         if (!text && !mediaUrl) {
             alert('יש להזין טקסט או קישור לתמונה/וידאו לפחות.');
             return;
@@ -169,11 +189,6 @@ function setupCreatePostForm() {
             createPostForm.reset();
         } catch (error) {
             console.error('Create Post Error:', error);
-            alert('יצירת הפוסט נכשלה.');
         }
     });
-}
-
-function showFeedback(message, type) {
-    alert(message);
 }
