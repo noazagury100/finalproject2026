@@ -3,40 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Clone - Groups</title>
+    <title>Instagram Clone - Explore</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-   
     <header class="main-header">
         <div class="header-content">
             <h1 class="logo">Instagram</h1>
             <nav class="main-nav">
                 <ul>
                     <li><a href="/">פיד</a></li>
-                    <li><a href="/explore">אקספלור</a></li>
-                    <li><a href="/groups" class="active">קבוצות</a></li>
+                    <li><a href="/explore" class="active">אקספלור</a></li>
+                    <li><a href="/groups">קבוצות</a></li>
                     <li><a href="/profile">פרופיל</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <div class="main-layout">
-        <section class="feed-section">
-            <h2 style="margin-bottom: 15px;">קבוצות ברשת</h2>
-            <div class="sidebar-card">
-                <h3>קבוצת תכנות</h3>
-                <p style="font-size: 14px; margin-bottom: 10px;">מנהל: avi_cohen</p>
-                <button class="submit-btn">הצטרף לקבוצה</button>
+    <div class="main-layout" style="justify-content: center;">
+        
+        <section class="explore-section" style="width: 100%; max-width: 900px;">
+            <h2 style="margin-bottom: 15px;">גלריית אקספלור - כלבים 🐶</h2>
+            
+            <div class="video-container" style="margin-bottom: 25px;">
+                <h3 style="margin-bottom: 10px; color: #8e8e8e;">סרטון מומלץ היום 🎥</h3>
+                <video controls width="100%" style="border-radius: 8px;">
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    הדפדפן שלך לא תומך בווידאו.
+                </video>
+            </div>
+
+            <!-- גלריית תמונות כלבים מויקיפדיה -->
+            <div class="explore-gallery">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Golden_Retriever_2000.jpg/640px-Golden_Retriever_2000.jpg" alt="גולדן רטריבר" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/German_Shepherd_-_DSC_0113_%2826307898592%29.jpg/640px-German_Shepherd_-_DSC_0113_%2826307898592%29.jpg" alt="רועה גרמני" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Siberian-husky.jpg/640px-Siberian-husky.jpg" alt="האסקי סיבירי" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Pug_portrait.jpg/640px-Pug_portrait.jpg" alt="פג" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Beagle_600.jpg/640px-Beagle_600.jpg" alt="ביגל" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Welsh_Corgi_Pembroke.jpg/640px-Welsh_Corgi_Pembroke.jpg" alt="קורגי" style="width:100%; margin-bottom: 10px; border-radius: 8px;">
             </div>
         </section>
+
     </div>
 
-
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project - Groups Page</p>
+        <p>&copy; 2026 Instagram Project - Explore Page</p>
     </footer>
 
 </body>

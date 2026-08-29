@@ -14,39 +14,36 @@ const seedData = async () => {
         await Post.deleteMany({});
         await Group.deleteMany({});
 
-        // יצירת משתמשים עם השם avi_cohen
-        const user1 = await User.create({ username: 'avi_cohen', password: 'password123' });
-        const user2 = await User.create({ username: 'itay_dev', password: 'password123' });
+        const user1 = await User.create({ username: 'noa_z', password: 'password123' });
+        const user2 = await User.create({ username: 'dog_lover', password: 'password123' });
 
-        // יצירת קבוצות
-        const group1 = await Group.create({ name: 'קבוצת תכנות', admin: user1._id });
-        const group2 = await Group.create({ name: 'קבוצת מוזיקה', admin: user2._id });
-
-        // יצירת פוסטים עם תמונות תקינות
         await Post.create([
             {
                 author: user1._id,
-                text: 'ברוכים הבאים לרשת החברתית החדשה שלנו! 🚀',
-                mediaType: 'text'
-            },
-            {
-                author: user1._id,
-                text: 'משהו נחמד לראות בווידאו 🎥',
-                mediaType: 'video',
-                mediaUrl: 'https://www.w3schools.com/html/mov_bbb.mp4'
+                text: 'גולדן רטריבר מתוק שפגשתי היום בגינה! 🐶',
+                mediaUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Golden_Retriever_2000.jpg/800px-Golden_Retriever_2000.jpg',
+                mediaType: 'image',
+                likesCount: 5,
+                comments: [{ username: 'dog_lover', text: 'איזה מתוק!' }]
             },
             {
                 author: user2._id,
-                text: 'תמונה ראשונה במערכת! 📸',
+                text: 'האסקי סיבירי נהנה בשלג ❄️',
+                mediaUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Siberian-husky.jpg/800px-Siberian-husky.jpg',
                 mediaType: 'image',
-                mediaUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800'
+                likesCount: 12
             }
         ]);
 
-        console.log('✅ Seed Data Inserted Successfully!');
+        await Group.create([
+            { name: 'אוהבי כלבים', description: 'קבוצה לכל מי שאוהב כלבים וחיות מחמד', admin: user1._id },
+            { name: 'טיולי כלבים', description: 'מארגנים מפגשים בגינות כלבים', admin: user2._id }
+        ]);
+
+        console.log('✅ Seed Data Inserted Successfully with Wikipedia Dogs!');
         process.exit();
-    } catch (error) {
-        console.error('❌ Error Seeding Data:', error);
+    } catch (err) {
+        console.error('❌ Seed Error:', err);
         process.exit(1);
     }
 };
