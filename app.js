@@ -27,6 +27,8 @@ const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 const groupRoutes = require('./routes/groupRoutes');
 app.use('/api/groups', groupRoutes);
+const statsRoutes = require('./routes/statsRoutes');
+app.use('/api/stats', statsRoutes);
 
 // נתיבי API
 app.use('/api/posts', postRoutes);
