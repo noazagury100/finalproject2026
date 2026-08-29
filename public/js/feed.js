@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPostsViaAjax();
     loadGroupsViaAjax();
     setupCreatePostForm();
+    fetchWeather(); // תוספת: טעינת נתוני מזג האוויר בטעינת העמוד
 });
 
 
@@ -191,4 +192,28 @@ function setupCreatePostForm() {
             console.error('Create Post Error:', error);
         }
     });
+}
+
+
+// --- תוספת: קריאה בלייב ל-API חיצוני של מזג אוויר ---
+function fetchWeather() {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=32.0853&longitude=34.7818&current_weather=true')
+        .then(res => res.json())
+        .then(data => {
+            const weather = data.current_weather;
+            const container = document.getElementById('weather-widget');
+            if (container && weather) {
+                container.innerHTML = `
+                    <div style="font-size: 14px; line-height: 1.6;">
+                        <p><strong>טמפרטורה:</strong> ${weather.temperature}°C</p>
+                        <p><strong>מהירות רוח:</strong> ${weather.windspeed} km/h</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching weather:', err);
+            const container = document.getElementById('weather-widget');
+            if (container) container.innerText = 'שגיאה שטעינת נתוני מזג האוויר';
+        });
 }
