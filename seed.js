@@ -28,19 +28,19 @@ const seedData = async () => {
             },
             {
                 author: user2._id,
-                text: 'האסקי סיבירי ❄️',
-                mediaUrl: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=800',
+                text: 'חבר חדש ומקסים על ארבע! 🐶✨',
+                mediaUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800',
                 mediaType: 'image',
                 likesCount: 12
             }
         ]);
 
         await Group.create([
-            { name: 'אוהבי כלבים', description: 'קבוצה לכל מי שאוהב כלבים וחיות מחמד', admin: user1._id },
-            { name: 'טיולי כלבים', description: 'מארגנים מפגשים בגינות כלבים', admin: user2._id }
+            { name: 'אוהבי חיות', description: 'קבוצה לכל מי שאוהב חיות מחמד', admin: user1._id },
+            { name: 'מפגשי גינה', description: 'מארגנים מפגשים בפארק', admin: user2._id }
         ]);
 
-        console.log('✅ Seed Data Inserted Successfully!');
+        console.log('✅ Seed Data Updated!');
         process.exit();
     } catch (err) {
         console.error('❌ Seed Error:', err);
