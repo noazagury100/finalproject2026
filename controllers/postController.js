@@ -14,7 +14,6 @@ exports.createPost = async (req, res) => {
     try {
         const { text, mediaType, mediaUrl } = req.body;
 
-        // מציאת משתמש קיים או יצירה חד פעמית למניעת שגיאות Duplicate Key ב-DB
         let author = await User.findOne();
         if (!author) {
             author = await User.create({
@@ -85,3 +84,31 @@ exports.deletePost = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.shareToTwitter = async (req, res) => {
+    try {
+        const { text } = req.body;
+
+        const externalResponse = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: 'Twitter API Share',
+                body: text || 'פוסט מהאפליקציה',
+                platform: 'Twitter'
+            })
+        });
+
+        if (externalResponse.ok) {
+            return res.status(200).json({
+                success: true,
+                message: 'הפוסט שודר בהצלחה ל-API החיצוני!'
+            });
+        } else {
+            throw new Error('שגיאה בתקשורת מול ה-API החיצוני');
+        }
+    } catch (error) {
+        console.error('Share Error:', error);
+        res.status(500).json({ success: false, message: 'שגיאה פנימית בשרת בשיתוף' });
+    }
+};  

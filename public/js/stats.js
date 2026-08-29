@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     loadMediaTypeStats();
+    setupAdvancedSearch(); // הפעלת האזנה לטופס החיפוש המתקדם
 });
 
 function loadMediaTypeStats() {
@@ -77,4 +78,52 @@ function renderMediaTypeChart(data) {
         .style("font-weight", "bold")
         .style("fill", "#ffffff")
         .text(d => d.data.count > 0 ? `${d.data.label} (${d.data.count})` : '');
+}
+
+// לוגיקה לחיפוש המתקדם (3 פרמטרים במקביל)
+function setupAdvancedSearch() {
+    const form = document.getElementById("advancedSearchForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const keyword = document.getElementById("searchKeyword").value.trim();
+        const mediaType = document.getElementById("searchMediaType").value;
+        const fromDate = document.getElementById("searchFromDate").value;
+
+        const params = new URLSearchParams();
+        if (keyword) params.append("keyword", keyword);
+        if (mediaType) params.append("mediaType", mediaType);
+        if (fromDate) params.append("fromDate", fromDate);
+
+        try {
+            const response = await fetch(`/api/stats/search-posts?${params.toString()}`);
+            if (!response.ok) throw new Error("שגיאה בביצוע החיפוש");
+
+            const results = await response.json();
+            renderSearchResults(results);
+        } catch (err) {
+            console.error("Search error:", err);
+            document.getElementById("searchResultsContainer").innerHTML = "<p style='color: red; font-size: 13px;'>שגיאה בביצוע החיפוש</p>";
+        }
+    });
+}
+
+function renderSearchResults(results) {
+    const container = document.getElementById("searchResultsContainer");
+    if (!container) return;
+
+    if (!results || results.length === 0) {
+        container.innerHTML = "<p style='color: #8e8e8e; font-size: 13px;'>לא נמצאו פוסטים התואמים את תנאי החיפוש.</p>";
+        return;
+    }
+
+    container.innerHTML = `<p style='font-size: 13px; font-weight: bold; margin-bottom: 8px; text-align: right;'>מצאנו ${results.length} תוצאות:</p>` +
+        results.map(post => `
+            <div style="background: #fafafa; padding: 10px; border-radius: 4px; margin-bottom: 8px; font-size: 13px; text-align: right; border: 1px solid #efefef;">
+                <strong>${post.text || 'ללא כותרת/טקסט'}</strong> 
+                <span style="color: #8e8e8e; display: block; font-size: 11px; margin-top: 4px;">סוג מדיה: ${post.mediaType} | תאריך: ${new Date(post.createdAt).toLocaleDateString('he-IL')}</span>
+            </div>
+        `).join('');
 }

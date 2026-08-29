@@ -83,6 +83,10 @@ function renderPosts(posts) {
             </div>
         `).join('');
 
+        // שמירת הטקסט הגולמי בצורה בטוחה עבור ה-HTML
+        const rawPostText = post.text || 'פוסט מדהים מהאפליקציה שלנו! 🚀';
+        const encodedShareText = encodeURIComponent(rawPostText);
+
         article.innerHTML = `
             <div class="post-header">
                 <div class="avatar-circle">${post.author ? post.author.username[0].toUpperCase() : 'U'}</div>
@@ -97,9 +101,17 @@ function renderPosts(posts) {
             <div class="post-body">
                 <div class="post-caption"><p>${post.text || ''}</p></div>
                 
-                <div style="margin: 10px 0;">
+                <div style="margin: 10px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <button class="like-btn" onclick="handleLike('${post._id}')">
                         ❤️ <span id="like-count-${post._id}">${post.likesCount || 0}</span> לייקים
+                    </button>
+                    
+                    <button type="button" class="twitter-share-btn" data-text="${encodedShareText}" style="background: #1da1f2; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        🐦 שיתוף ל-API (Twitter)
+                    </button>
+
+                    <button type="button" onclick="shareNative('${encodedShareText}')" style="background: #4267B2; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        📘 שיתוף רשתות
                     </button>
                 </div>
 
@@ -207,13 +219,11 @@ function setupCanvasStudio() {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    // אירועי עכבר
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mouseup", stopDrawing);
     canvas.addEventListener("mouseleave", stopDrawing);
 
-    // אירועי מגע (טאבלטים וטלפונים ניידים)
     canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
         const touch = e.touches[0];
@@ -270,7 +280,6 @@ function setupCanvasStudio() {
         ctx.closePath();
     }
 
-    // כפתור ניקוי הלוח
     const clearBtn = document.getElementById("clearCanvasBtn");
     if (clearBtn) {
         clearBtn.addEventListener("click", () => {
@@ -278,15 +287,14 @@ function setupCanvasStudio() {
         });
     }
 
-    // כפתור פרסום הציור כפוסט בפיד (מתוקן לשדות הנכונים)
     const publishBtn = document.getElementById("publishCanvasBtn");
     if (publishBtn) {
         publishBtn.addEventListener("click", async () => {
             const dataURL = canvas.toDataURL("image/png");
             
             const postData = {
-                mediaType: 'image', // תוקן מ-type ל-mediaType כדי שהשרת יזהה זאת כתמונה
-                text: 'יצירה מסטודיו ה-Canvas 🎨✨', // תוקן מ-caption ל-text בהתאם לשאר הפוסטים במערכת
+                mediaType: 'image',
+                text: 'יצירה מסטודיו ה-Canvas 🎨✨',
                 mediaUrl: dataURL
             };
 
@@ -333,3 +341,55 @@ function fetchWeather() {
             if (container) container.innerText = 'שגיאה בטעינת נתוני מזג האוויר';
         });
 }
+
+
+// --- שיתוף אמיתי דרך השרת (עמידה בדרישת ה-API של המרצה) ---
+async function shareToTwitter(postText) {
+    try {
+        const response = await fetch('/api/posts/share-twitter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: postText })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            alert('✅ הפוסט שודר בהצלחה ל-API החיצוני!');
+        } else {
+            alert('❌ שגיאה בתקשורת עם השרת לצורך שיתוף.');
+        }
+    } catch (error) {
+        console.error('Fetch Error:', error);
+        alert('❌ שגיאה בתקשורת עם השרת לצורך שיתוף.');
+    }
+}
+
+async function shareNative(text) {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Instagram Post',
+                text: decodeURIComponent(text),
+                url: window.location.href
+            });
+        } catch (err) {
+            console.log('Error sharing:', err);
+        }
+    } else {
+        alert('שיתוף מקומי אינו נתמך בדפדפן זה ישירות.');
+    }
+}
+
+
+// --- מאזין אירועים גלובלי בטוח לכפתורי שיתוף ---
+document.addEventListener('click', (e) => {
+    const targetBtn = e.target.closest('.twitter-share-btn');
+    if (targetBtn) {
+        const encodedText = targetBtn.getAttribute('data-text');
+        const text = decodeURIComponent(encodedText);
+        shareToTwitter(text);
+    }
+});
