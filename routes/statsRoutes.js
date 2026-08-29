@@ -10,4 +10,7 @@ router.get('/group-members-count', statsController.getGroupMemberStats);
 router.get('/search-posts', statsController.searchPosts);
 router.get('/search-groups', statsController.searchGroups);
 
+// נתיב ראשי לנתוני הגרף ב-D3
+router.get('/', statsController.getStats);
+
 module.exports = router;

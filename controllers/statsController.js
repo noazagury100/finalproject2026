@@ -115,17 +115,39 @@ exports.getGroupsStats = async (req, res) => {
     }
 };
 
-// 3. סטטיסטיקה שבועית עבור גרף העמודות בדף הפרופיל
+// 3. סטטיסטיקה שבועית חינאמית מ-MongoDB עבור גרף ה-D3 בדף הפרופיל
 exports.getStats = async (req, res) => {
     try {
-        const statsData = [
-            { day: 'א\'', likes: 12 },
-            { day: 'ב\'', likes: 25 },
-            { day: 'ג\'', likes: 18 },
-            { day: 'ד\'', likes: 30 },
-            { day: 'ה\'', likes: 45 }
-        ];
-        res.json(statsData);
+        const stats = await Post.aggregate([
+            {
+                $group: {
+                    _id: { $dayOfWeek: "$createdAt" },
+                    totalLikes: { $sum: "$likes" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { "_id": 1 } }
+        ]);
+
+        const daysMap = { 1: "'א", 2: "'ב", 3: "'ג", 4: "'ד", 5: "'ה", 6: "'ו", 7: "'ש" };
+        
+        let formattedData = stats.map(item => ({
+            day: daysMap[item._id] || "'א",
+            likes: item.totalLikes || item.count || 0
+        }));
+
+        // גיבוי תצוגתי במידה והמסד עדיין ריק מפוסטים
+        if (formattedData.length === 0) {
+            formattedData = [
+                { day: "'א", likes: 0 },
+                { day: "'ב", likes: 0 },
+                { day: "'ג", likes: 0 },
+                { day: "'ד", likes: 0 },
+                { day: "'ה", likes: 0 }
+            ];
+        }
+
+        res.json(formattedData);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
