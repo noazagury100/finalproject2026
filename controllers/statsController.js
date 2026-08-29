@@ -116,6 +116,7 @@ exports.getGroupsStats = async (req, res) => {
 };
 
 // 3. סטטיסטיקה שבועית חינאמית מ-MongoDB עבור גרף ה-D3 בדף הפרופיל
+// 3. סטטיסטיקה שבועית מ-MongoDB עבור גרף ה-D3 בדף הפרופיל (מבטיח הצגת כל ימי השבוע)
 exports.getStats = async (req, res) => {
     try {
         const stats = await Post.aggregate([
@@ -125,29 +126,33 @@ exports.getStats = async (req, res) => {
                     totalLikes: { $sum: "$likes" },
                     count: { $sum: 1 }
                 }
-            },
-            { $sort: { "_id": 1 } }
+            }
         ]);
 
+        // תבנית בסיס לכל ימי השבוע
+        const fullWeek = [
+            { day: "'א", likes: 0 },
+            { day: "'ב", likes: 0 },
+            { day: "'ג", likes: 0 },
+            { day: "'ד", likes: 0 },
+            { day: "'ה", likes: 0 },
+            { day: "'ו", likes: 0 },
+            { day: "'ש", likes: 0 }
+        ];
+
+        // מפת ימים מ-MongoDB ($dayOfWeek: 1 = ראשון ... 7 = שבת)
         const daysMap = { 1: "'א", 2: "'ב", 3: "'ג", 4: "'ד", 5: "'ה", 6: "'ו", 7: "'ש" };
-        
-        let formattedData = stats.map(item => ({
-            day: daysMap[item._id] || "'א",
-            likes: item.totalLikes || item.count || 0
-        }));
 
-        // גיבוי תצוגתי במידה והמסד עדיין ריק מפוסטים
-        if (formattedData.length === 0) {
-            formattedData = [
-                { day: "'א", likes: 0 },
-                { day: "'ב", likes: 0 },
-                { day: "'ג", likes: 0 },
-                { day: "'ד", likes: 0 },
-                { day: "'ה", likes: 0 }
-            ];
-        }
+        // עדכון הלייקים או הכמות לתוך ימי השבוע
+        stats.forEach(item => {
+            const dayName = daysMap[item._id];
+            const foundDay = fullWeek.find(d => d.day === dayName);
+            if (foundDay) {
+                foundDay.likes = item.totalLikes || item.count || 0;
+            }
+        });
 
-        res.json(formattedData);
+        res.json(fullWeek);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
