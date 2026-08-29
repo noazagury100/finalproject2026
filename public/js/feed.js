@@ -2,10 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPostsViaAjax();
     loadGroupsViaAjax();
     setupCreatePostForm();
-    fetchWeather(); // טעינת נתוני מזג האוויר בטעינת העמוד
-    setupCanvasStudio(); // תוספת: אתחול סטודיו הציור (Canvas)
+    fetchWeather();
+    setupCanvasStudio();
 });
-
 
 async function loadPostsViaAjax() {
     try {
@@ -18,7 +17,6 @@ async function loadPostsViaAjax() {
         console.error('AJAX Error:', error);
     }
 }
-
 
 async function loadGroupsViaAjax() {
     try {
@@ -44,7 +42,6 @@ async function loadGroupsViaAjax() {
         console.error('Groups Error:', error);
     }
 }
-
 
 function renderPosts(posts) {
     const feedContainer = document.getElementById('feedContainer');
@@ -83,6 +80,8 @@ function renderPosts(posts) {
             </div>
         `).join('');
 
+        const safeText = post.text ? post.text.replace(/'/g, "\\'") : 'פוסט חדש';
+
         article.innerHTML = `
             <div class="post-header">
                 <div class="avatar-circle">${post.author ? post.author.username[0].toUpperCase() : 'U'}</div>
@@ -97,9 +96,12 @@ function renderPosts(posts) {
             <div class="post-body">
                 <div class="post-caption"><p>${post.text || ''}</p></div>
                 
-                <div style="margin: 10px 0;">
+                <div style="margin: 10px 0; display: flex; gap: 10px; align-items: center;">
                     <button class="like-btn" onclick="handleLike('${post._id}')">
                         ❤️ <span id="like-count-${post._id}">${post.likesCount || 0}</span> לייקים
+                    </button>
+                    <button class="like-btn" onclick="shareToTwitter('${safeText}')" style="color: #1da1f2;">
+                        🐦 שיתוף ל-Twitter
                     </button>
                 </div>
 
@@ -120,6 +122,11 @@ function renderPosts(posts) {
     });
 }
 
+function shareToTwitter(text) {
+    const tweetText = encodeURIComponent(`בדקו את הפוסט הזה ברשת החברתית שלי: "${text}"`);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=400');
+}
 
 async function handleLike(postId) {
     try {
@@ -133,7 +140,6 @@ async function handleLike(postId) {
         console.error('Like Error:', error);
     }
 }
-
 
 async function handleComment(event, postId) {
     event.preventDefault();
@@ -160,7 +166,6 @@ async function handleComment(event, postId) {
         console.error('Comment Error:', error);
     }
 }
-
 
 function setupCreatePostForm() {
     const createPostForm = document.getElementById('createPostForm');
@@ -195,8 +200,6 @@ function setupCreatePostForm() {
     });
 }
 
-
-// --- ניהול רכיב ה-HTML5 Canvas (סטודיו ציור) ---
 function setupCanvasStudio() {
     const canvas = document.getElementById("drawingCanvas");
     if (!canvas) return;
@@ -207,13 +210,11 @@ function setupCanvasStudio() {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    // אירועי עכבר
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("mouseup", stopDrawing);
     canvas.addEventListener("mouseleave", stopDrawing);
 
-    // אירועי מגע (טאבלטים וטלפונים ניידים)
     canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
         const touch = e.touches[0];
@@ -270,7 +271,6 @@ function setupCanvasStudio() {
         ctx.closePath();
     }
 
-    // כפתור ניקוי הלוח
     const clearBtn = document.getElementById("clearCanvasBtn");
     if (clearBtn) {
         clearBtn.addEventListener("click", () => {
@@ -278,15 +278,14 @@ function setupCanvasStudio() {
         });
     }
 
-    // כפתור פרסום הציור כפוסט בפיד (מתוקן לשדות הנכונים)
     const publishBtn = document.getElementById("publishCanvasBtn");
     if (publishBtn) {
         publishBtn.addEventListener("click", async () => {
             const dataURL = canvas.toDataURL("image/png");
             
             const postData = {
-                mediaType: 'image', // תוקן מ-type ל-mediaType כדי שהשרת יזהה זאת כתמונה
-                text: 'יצירה מסטודיו ה-Canvas 🎨✨', // תוקן מ-caption ל-text בהתאם לשאר הפוסטים במערכת
+                mediaType: 'image',
+                text: 'יצירה מסטודיו ה-Canvas 🎨✨',
                 mediaUrl: dataURL
             };
 
@@ -310,8 +309,6 @@ function setupCanvasStudio() {
     }
 }
 
-
-// --- קריאה בלייב ל-API חיצוני של מזג אוויר ---
 function fetchWeather() {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=32.0853&longitude=34.7818&current_weather=true')
         .then(res => res.json())
