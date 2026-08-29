@@ -3,25 +3,29 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCreatePostForm();
 });
 
-
+// טעינת פוסטים משרת ה-API עם טיפול בשגיאות
 async function loadPostsViaAjax() {
     try {
         const response = await fetch('/api/posts');
-        if (!response.ok) throw new Error('שגיאה בטעינת הפוסטים');
+        if (!response.ok) {
+            throw new Error(`שגיאת שרת (${response.status})`);
+        }
 
         const posts = await response.json();
         renderPosts(posts);
     } catch (error) {
         console.error('AJAX Error:', error);
+        showFeedback('שגיאה בטעינת הפיד. ודא שהשרת פעיל.', 'error');
     }
 }
 
+// הצגת פוסטים במסך
 function renderPosts(posts) {
     const feedContainer = document.getElementById('feedContainer');
     if (!feedContainer) return;
 
     if (posts.length === 0) {
-        feedContainer.innerHTML = '<p style="text-align:center;">אין פוסטים להצגה כרגע.</p>';
+        feedContainer.innerHTML = '<p style="text-align:center; color:#8e8e8e;">אין פוסטים להצגה כרגע.</p>';
         return;
     }
 
@@ -31,7 +35,6 @@ function renderPosts(posts) {
         const article = document.createElement('article');
         article.classList.add('post-card');
 
-        
         const postDate = post.createdAt 
             ? new Date(post.createdAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })
             : 'עכשיו';
@@ -47,6 +50,7 @@ function renderPosts(posts) {
                     </video>
                 </div>`;
         }
+
         const commentsHTML = (post.comments || []).map(c => `
             <div style="font-size: 13px; margin-top: 4px;">
                 <strong>${c.username || 'משתמש'}:</strong> ${c.text}
@@ -73,13 +77,13 @@ function renderPosts(posts) {
                     </button>
                 </div>
 
-                <div class="comments-section" style="border-top: 1px solid #efefef; pt-2; margin-top: 10px;">
+                <div class="comments-section" style="border-top: 1px solid #efefef; padding-top: 8px; margin-top: 10px;">
                     <div id="comments-list-${post._id}" style="margin-bottom: 8px;">
                         ${commentsHTML}
                     </div>
                     
                     <form onsubmit="handleComment(event, '${post._id}')" style="display: flex; gap: 5px;">
-                        <input type="text" id="comment-input-${post._id}" placeholder="הוסף תגובה..." required style="flex:1; padding: 6px; font-size: 13px; border: 1px solid #dbdbdb; border-radius: 4px;">
+                        <input type="text" id="comment-input-${post._id}" placeholder="הוסף תגובה..." style="flex:1; padding: 6px; font-size: 13px; border: 1px solid #dbdbdb; border-radius: 4px;">
                         <button type="submit" style="background: #0095f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">שלח</button>
                     </form>
                 </div>
@@ -90,42 +94,51 @@ function renderPosts(posts) {
     });
 }
 
+// לחיצה על לייק
 async function handleLike(postId) {
     try {
         const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
-        if (response.ok) {
-            const data = await response.json();
-            const countElement = document.getElementById(`like-count-${postId}`);
-            if (countElement) countElement.innerText = data.likesCount;
-        }
+        if (!response.ok) throw new Error('שגיאה בעדכון בלייק');
+
+        const data = await response.json();
+        const countElement = document.getElementById(`like-count-${postId}`);
+        if (countElement) countElement.innerText = data.likesCount;
     } catch (error) {
         console.error('Like Error:', error);
+        alert('לא ניתן לעדכן לייק כרגע.');
     }
 }
 
-
+// שליחת תגובה עם ולידציית קלט
 async function handleComment(event, postId) {
     event.preventDefault();
     const input = document.getElementById(`comment-input-${postId}`);
-    if (!input || !input.value.trim()) return;
+    const commentText = input ? input.value.trim() : '';
+
+    // ולידציה בצד לקוח (סעיף 29)
+    if (!commentText) {
+        alert('אנא הוסף תוכן לתגובה לפני השליחה.');
+        return;
+    }
 
     try {
         const response = await fetch(`/api/posts/${postId}/comment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: input.value.trim() })
+            body: JSON.stringify({ text: commentText })
         });
 
-        if (response.ok) {
-            input.value = '';
-            await loadPostsViaAjax(); // רענון הפיד עם התגובה החדשה
-        }
+        if (!response.ok) throw new Error('שגיאה בשליחת התגובה');
+
+        input.value = '';
+        await loadPostsViaAjax();
     } catch (error) {
         console.error('Comment Error:', error);
+        alert('שליחת התגובה נכשלה.');
     }
 }
 
-
+// יצירת פוסט חדש עם ולידציות
 function setupCreatePostForm() {
     const createPostForm = document.getElementById('createPostForm');
     if (!createPostForm) return;
@@ -133,25 +146,34 @@ function setupCreatePostForm() {
     createPostForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const postData = {
-            text: document.getElementById('postCaptionInput')?.value || '',
-            mediaUrl: document.getElementById('postUrlInput')?.value || '',
-            mediaType: document.getElementById('postTypeInput')?.value || 'text'
-        };
+        const text = document.getElementById('postCaptionInput')?.value.trim() || '';
+        const mediaUrl = document.getElementById('postUrlInput')?.value.trim() || '';
+        const mediaType = document.getElementById('postTypeInput')?.value || 'text';
+
+        // ולידציית קלט בצד לקוח (סעיף 29)
+        if (!text && !mediaUrl) {
+            alert('יש להזין טקסט או קישור לתמונה/וידאו לפחות.');
+            return;
+        }
 
         try {
             const response = await fetch('/api/posts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postData)
+                body: JSON.stringify({ text, mediaUrl, mediaType })
             });
 
-            if (response.ok) {
-                await loadPostsViaAjax();
-                createPostForm.reset();
-            }
+            if (!response.ok) throw new Error('שגיאה ביצירת פוסט');
+
+            await loadPostsViaAjax();
+            createPostForm.reset();
         } catch (error) {
             console.error('Create Post Error:', error);
+            alert('יצירת הפוסט נכשלה.');
         }
     });
+}
+
+function showFeedback(message, type) {
+    alert(message);
 }
