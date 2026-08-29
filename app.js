@@ -20,9 +20,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Basic Route
+// נתיבים להצגת דפי HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
+});
+
+app.get('/explore', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'explore.html'));
+});
+
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
+});
+
+app.get('/groups', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'groups.html'));
 });
 
 // נתיבי API
