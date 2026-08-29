@@ -37,6 +37,10 @@ app.get('/groups', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'groups.html'));
 });
 
+app.get('/stats', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'stats.html'));
+});
+
 // נתיבי API
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);

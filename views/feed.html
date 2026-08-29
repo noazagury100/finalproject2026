@@ -18,6 +18,7 @@
                     <li><a href="/explore">אקספלור</a></li>
                     <li><a href="/groups">קבוצות</a></li>
                     <li><a href="/profile">פרופיל</a></li>
+                    <li><a href="/stats">סטטיסטיקות</a></li>
                 </ul>
             </nav>
         </div>
@@ -43,6 +44,7 @@
         </aside>
 
         <section class="feed-section">
+            <!-- טופס יצירת פוסט רגיל -->
             <div class="create-post-card">
                 <h3>שתף פוסט חדש</h3>
                 <form id="createPostForm">
@@ -55,6 +57,22 @@
                     <input type="url" id="postUrlInput" placeholder="הדבק קישור למדיה (תמונה/וידאו)" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #dbdbdb;">
                     <button type="submit" class="submit-btn" style="width: 100%; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">פרסום פוסט</button>
                 </form>
+            </div>
+
+            <!-- רכיב HTML5 Canvas: סטודיו ציור וסטורי -->
+            <div class="create-post-card" style="margin-top: 20px;">
+                <h3 style="text-align: right; margin-bottom: 10px;">🎨 סטודיו ציור וסטורי (Canvas)</h3>
+                <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center; justify-content: flex-start; flex-wrap: wrap; flex-direction: row-reverse;">
+                    <label style="display: flex; align-items: center; gap: 5px; font-size: 13px;">בחר צבע: <input type="color" id="canvasColor" value="#0095f6" style="border:none; width:30px; height:25px; cursor:pointer;"></label>
+                    <label style="display: flex; align-items: center; gap: 5px; font-size: 13px;">עובי מכחול: <input type="range" id="brushSize" min="1" max="20" value="5"></label>
+                    <button type="button" id="clearCanvasBtn" style="padding: 6px 12px; background: #ed4956; color: white; border: none; border-radius: 4px; cursor: pointer;">נקה הכל</button>
+                </div>
+                
+                <div style="border: 1px solid #dbdbdb; border-radius: 8px; overflow: hidden; background: #ffffff; display: flex; justify-content: center;">
+                    <canvas id="drawingCanvas" width="450" height="300" style="cursor: crosshair; background: #ffffff; touch-action: none; display: block;"></canvas>
+                </div>
+
+                <button type="button" id="publishCanvasBtn" style="width: 100%; margin-top: 10px; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">פרסום ציור כפוסט</button>
             </div>
 
             <div id="feedContainer"></div>
