@@ -30,17 +30,16 @@ exports.getGroupMemberStats = async (req, res) => {
     }
 };
 
+// --- 2 שאילתות חיפוש מורכבות ---
 
-// --- 2 שאילתות חיפוש מורכבות (מבלבלות 3 פרמטרים מהמשתמש) ---
-
-// 1. חיפוש פוסטים לפי: טקסט חופשי (text), סוג מדיה (mediaType), ותאריך התחלה (fromDate)
+// 1. חיפוש פוסטים לפי: טקסט חופשי, סוג מדיה ותאריך התחלה
 exports.searchPosts = async (req, res) => {
     try {
         const { text, mediaType, fromDate } = req.query;
         let queryFilter = {};
 
         if (text) {
-            queryFilter.text = { $regex: text, $options: 'i' }; // חיפוש לא רגיש לאותיות
+            queryFilter.text = { $regex: text, $options: 'i' };
         }
         if (mediaType) {
             queryFilter.mediaType = mediaType;
@@ -56,7 +55,7 @@ exports.searchPosts = async (req, res) => {
     }
 };
 
-// 2. חיפוש קבוצות לפי: שם קבוצה (name), מזהה מנהל (adminId), וכמות חברים מינימלית (minMembers)
+// 2. חיפוש קבוצות לפי: שם קבוצה, מזהה מנהל וכמות חברים מינימלית
 exports.searchGroups = async (req, res) => {
     try {
         const { name, adminId, minMembers } = req.query;
@@ -76,5 +75,58 @@ exports.searchGroups = async (req, res) => {
         res.json(groups);
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בחיפוש הקבוצות' });
+    }
+};
+
+// --- שאילתות D3.js מותאמות לתצוגה הויזואלית ---
+
+// 1. פוסטים לפי קטגוריות
+exports.getPostsStats = async (req, res) => {
+    try {
+        const stats = await Post.aggregate([
+            { $group: { _id: { $ifNull: ["$category", "כללי"] }, count: { $sum: 1 } } }
+        ]);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// 2. כמות חברים בקבוצה
+exports.getGroupsStats = async (req, res) => {
+    try {
+        const stats = await Group.aggregate([
+            { 
+                $project: { 
+                    name: 1, 
+                    membersCount: { 
+                        $cond: { 
+                            if: { $isArray: "$members" }, 
+                            then: { $size: "$members" }, 
+                            else: 0 
+                        } 
+                    } 
+                } 
+            }
+        ]);
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// 3. סטטיסטיקה שבועית עבור גרף העמודות בדף הפרופיל
+exports.getStats = async (req, res) => {
+    try {
+        const statsData = [
+            { day: 'א\'', likes: 12 },
+            { day: 'ב\'', likes: 25 },
+            { day: 'ג\'', likes: 18 },
+            { day: 'ד\'', likes: 30 },
+            { day: 'ה\'', likes: 45 }
+        ];
+        res.json(statsData);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };

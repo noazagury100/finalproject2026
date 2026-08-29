@@ -53,3 +53,15 @@ exports.joinGroup = async (req, res) => {
         res.status(500).json({ error: 'שגיאה בהצטרפות לקבוצה' });
     }
 };
+
+// --- תוספת עבור המפה האינטראקטיבית (Leaflet) ---
+
+// החזרת מיקומי קבוצות עבור המפה
+exports.getGroupsLocations = async (req, res) => {
+    try {
+        const groups = await Group.find({}, 'name description location lat lng members');
+        res.json(groups);
+    } catch (error) {
+        res.status(500).json({ error: 'שגיאה שטעינת מיקומי הקבוצות' });
+    }
+};
