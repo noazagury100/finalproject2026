@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPostsViaAjax();
     loadGroupsViaAjax();
     setupCreatePostForm();
-    fetchWeather(); // תוספת: טעינת נתוני מזג האוויר בטעינת העמוד
+    fetchWeather(); // טעינת נתוני מזג האוויר בטעינת העמוד
+    setupCanvasStudio(); // תוספת: אתחול סטודיו הציור (Canvas)
 });
 
 
@@ -195,7 +196,122 @@ function setupCreatePostForm() {
 }
 
 
-// --- תוספת: קריאה בלייב ל-API חיצוני של מזג אוויר ---
+// --- ניהול רכיב ה-HTML5 Canvas (סטודיו ציור) ---
+function setupCanvasStudio() {
+    const canvas = document.getElementById("drawingCanvas");
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // אירועי עכבר
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+
+    // אירועי מגע (טאבלטים וטלפונים ניידים)
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        canvas.dispatchEvent(new MouseEvent("mousedown", {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        }));
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        canvas.dispatchEvent(new MouseEvent("mousemove", {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        }));
+    });
+
+    canvas.addEventListener("touchend", () => {
+        canvas.dispatchEvent(new MouseEvent("mouseup", {}));
+    });
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getMousePos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        
+        const colorInput = document.getElementById("canvasColor");
+        const sizeInput = document.getElementById("brushSize");
+
+        ctx.strokeStyle = colorInput ? colorInput.value : "#0095f6";
+        ctx.lineWidth = sizeInput ? sizeInput.value : 5;
+
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        ctx.closePath();
+    }
+
+    // כפתור ניקוי הלוח
+    const clearBtn = document.getElementById("clearCanvasBtn");
+    if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+    }
+
+    // כפתור פרסום הציור כפוסט בפיד (מתוקן לשדות הנכונים)
+    const publishBtn = document.getElementById("publishCanvasBtn");
+    if (publishBtn) {
+        publishBtn.addEventListener("click", async () => {
+            const dataURL = canvas.toDataURL("image/png");
+            
+            const postData = {
+                mediaType: 'image', // תוקן מ-type ל-mediaType כדי שהשרת יזהה זאת כתמונה
+                text: 'יצירה מסטודיו ה-Canvas 🎨✨', // תוקן מ-caption ל-text בהתאם לשאר הפוסטים במערכת
+                mediaUrl: dataURL
+            };
+
+            try {
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) throw new Error("שגיאה בפרסום הציור");
+
+                alert("הציור פורסם בהצלחה לפיד!");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                await loadPostsViaAjax();
+            } catch (err) {
+                console.error(err);
+                alert("אירעה שגיאה בפרסום הציור.");
+            }
+        });
+    }
+}
+
+
+// --- קריאה בלייב ל-API חיצוני של מזג אוויר ---
 function fetchWeather() {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=32.0853&longitude=34.7818&current_weather=true')
         .then(res => res.json())
@@ -214,6 +330,6 @@ function fetchWeather() {
         .catch(err => {
             console.error('Error fetching weather:', err);
             const container = document.getElementById('weather-widget');
-            if (container) container.innerText = 'שגיאה שטעינת נתוני מזג האוויר';
+            if (container) container.innerText = 'שגיאה בטעינת נתוני מזג האוויר';
         });
 }

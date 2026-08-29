@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone - סטטיסטיקות</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-content">
+            <h1 class="logo">Instagram</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/">פיד</a></li>
+                    <li><a href="/explore">אקספלור</a></li>
+                    <li><a href="/groups">קבוצות</a></li>
+                    <li><a href="/profile">פרופיל</a></li>
+                    <li><a href="/stats" class="active">סטטיסטיקות</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="main-layout" style="justify-content: center;">
+        <div class="create-post-card" style="width: 100%; max-width: 600px; text-align: center; margin-top: 20px;">
+            <h3>📊 התפלגות פוסטים לפי סוג מדיה</h3>
+            <div id="media-type-chart" style="display: flex; justify-content: center; margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Instagram Project</p>
+    </footer>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="/js/stats.js"></script>
+</body>
+</html>
