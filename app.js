@@ -1,9 +1,10 @@
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
-const User = require('./models/User');
+const authMiddleware = require('./middleware/authMiddleware');
 
 const postRoutes = require('./routes/postRoutes');
 const groupRoutes = require('./routes/groupRoutes');
@@ -12,16 +13,26 @@ const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
-// התחברות ל-MongoDB
+
 connectDB();
 
-// Middleware
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// נתיבים להצגת דפי HTML
-app.get('/', (req, res) => {
+
+app.use(session({
+    secret: 'instagram_secret_key',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+app.get('/', authMiddleware.isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
 
@@ -41,10 +52,6 @@ app.get('/stats', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'stats.html'));
 });
 
-
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'login.html'));
-});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);

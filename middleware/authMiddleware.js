@@ -1,14 +1,13 @@
 const Post = require('../models/Post');
 
-// בדיקה שהמשתמש מחובר (מגן על נתיבים)
+
 exports.isAuthenticated = (req, res, next) => {
     if (req.session && req.session.user) {
         return next();
     }
-    return res.status(401).json({ error: 'גישה דחוקה: יש להתחבר למערכת' });
+    return res.redirect('/login');
 };
 
-// הרשאה: בדיקה שהמשתמש הוא בעלי הפוסט לפני עריכה/מחיקה
 exports.isPostOwner = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -18,7 +17,7 @@ exports.isPostOwner = async (req, res, next) => {
             return res.status(404).json({ error: 'הפוסט לא נמצא' });
         }
 
-        const userId = req.session?.user?._id || req.body.userId; // תמיכה בסשן או מזהה שנשלח
+        const userId = req.session?.user?.id || req.body.userId;
         if (post.author.toString() !== userId?.toString()) {
             return res.status(403).json({ error: 'הרשאה נדחתה: ניתן לערוך/למחוק רק פוסטים שנוצרו על ידך' });
         }
