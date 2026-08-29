@@ -12,7 +12,7 @@ const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
-
+// התחברות ל-MongoDB
 connectDB();
 
 // Middleware
@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+// נתיבים להצגת דפי HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
@@ -37,11 +37,14 @@ app.get('/groups', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'groups.html'));
 });
 
-
 app.get('/stats', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'stats.html'));
 });
 
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
