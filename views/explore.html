@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Clone - Explore</title>
+    <title>אקספלור - Instagram Clone</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
     <header class="main-header">
         <div class="header-content">
             <h1 class="logo">Instagram</h1>
@@ -23,34 +22,71 @@
         </div>
     </header>
 
-    <div class="main-layout" style="justify-content: center;">
-        
-        <section class="explore-section" style="width: 100%; max-width: 900px;">
-            <h2 style="margin-bottom: 15px;">גלריית אקספלור 📸</h2>
-            
-            <div class="video-container" style="margin-bottom: 25px;">
-                <h3 style="margin-bottom: 10px; color: #8e8e8e;">סרטון מומלץ היום 🎥</h3>
-                <video controls width="100%" style="border-radius: 8px;">
-                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                    הדפדפן שלך לא תומך בווידאו.
-                </video>
-            </div>
-
-            <div class="explore-gallery" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=600" alt="תמונה 1" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-                <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600" alt="תמונה 2" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-                <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600" alt="תמונה 3" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-                <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?w=600" alt="תמונה 4" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-                <img src="https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=600" alt="תמונה 5" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-                <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600" alt="תמונה 6" style="width:100%; border-radius: 8px; object-fit: cover; height: 200px;">
-            </div>
+    <main class="main-layout" style="flex-direction: column;">
+        <!-- טופס חיפוש מורכב עם 3 פרמטרים (סעיף 23) -->
+        <section class="create-post-card" style="margin-bottom: 30px;">
+            <h3>🔍 חיפוש פוסטים מתקדם</h3>
+            <form id="searchForm" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                <input type="text" id="searchText" placeholder="חפש לפי טקסט..." style="flex: 1; min-width: 150px; padding: 8px; border: 1px solid #dbdbdb; border-radius: 4px;">
+                
+                <select id="searchMediaType" style="flex: 1; min-width: 120px; padding: 8px; border: 1px solid #dbdbdb; border-radius: 4px;">
+                    <option value="">כל סוגי המדיה</option>
+                    <option value="text">טקסט בלבד</option>
+                    <option value="image">תמונה</option>
+                    <option value="video">וידאו</option>
+                </select>
+                
+                <input type="date" id="searchFromDate" style="flex: 1; min-width: 130px; padding: 8px; border: 1px solid #dbdbdb; border-radius: 4px;">
+                
+                <button type="submit" class="submit-btn" style="width: auto; padding: 8px 20px;">חפש</button>
+            </form>
         </section>
 
-    </div>
+        <!-- אזור הצגת תוצאות החיפוש -->
+        <section>
+            <h2>תוצאות חיפוש / גלריה</h2>
+            <div id="searchResults" class="explore-gallery" style="margin-top: 20px;"></div>
+        </section>
+    </main>
 
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project - Explore Page</p>
+        <p>Instagram Clone &copy; 2026</p>
     </footer>
 
+    <script>
+    document.getElementById('searchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const text = document.getElementById('searchText').value.trim();
+        const mediaType = document.getElementById('searchMediaType').value;
+        const fromDate = document.getElementById('searchFromDate').value;
+        
+        const queryParams = new URLSearchParams();
+        if (text) queryParams.append('text', text);
+        if (mediaType) queryParams.append('mediaType', mediaType);
+        if (fromDate) queryParams.append('fromDate', fromDate);
+        
+        try {
+            const response = await fetch(`/api/stats/search-posts?${queryParams.toString()}`);
+            const posts = await response.json();
+            
+            const resultsContainer = document.getElementById('searchResults');
+            if (posts.length === 0) {
+                resultsContainer.innerHTML = '<p style="text-align: center; color: #8e8e8e; width: 100%;">לא נמצאו פוסטים תואמים לחיפוש.</p>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = posts.map(post => `
+                <div class="post-card" style="padding: 12px; margin-bottom: 15px;">
+                    <strong>${post.author ? post.author.username : 'משתמש'}:</strong>
+                    <p style="margin: 5px 0;">${post.text || ''}</p>
+                    ${post.mediaUrl && post.mediaType === 'image' ? `<img src="${post.mediaUrl}" style="max-width: 100%; border-radius: 4px; margin-top: 5px;">` : ''}
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+    });
+    </script>
 </body>
 </html>
