@@ -6,7 +6,9 @@ const connectDB = require('./config/db');
 const User = require('./models/User');
 
 const postRoutes = require('./routes/postRoutes');
-const groupRoutes = require('./routes/groups');
+const groupRoutes = require('./routes/groupRoutes');
+const authRoutes = require('./routes/authRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
@@ -18,34 +20,28 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Basic Route
+// נתיבים להצגת דפי HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'feed.html'));
 });
 
-const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
-const groupRoutes = require('./routes/groupRoutes');
-app.use('/api/groups', groupRoutes);
-const statsRoutes = require('./routes/statsRoutes');
-app.use('/api/stats', statsRoutes);
+app.get('/explore', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'explore.html'));
+});
+
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
+});
+
+app.get('/groups', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'groups.html'));
+});
 
 // נתיבי API
+app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/groups', groupRoutes);
-
-// נתיב לבדיקה
-app.get('/init-db', async (req, res) => {
-    try {
-        const testUser = await User.create({
-            username: 'noa_test',
-            password: '123456password'
-        });
-        res.json({ message: 'DB and User Created Successfully!', user: testUser });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.use('/api/stats', statsRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
