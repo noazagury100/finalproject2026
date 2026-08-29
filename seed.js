@@ -21,15 +21,15 @@ const seedData = async () => {
             {
                 author: user1._id,
                 text: 'גולדן רטריבר מתוק שפגשתי היום בגינה! 🐶',
-                mediaUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Golden_Retriever_2000.jpg/800px-Golden_Retriever_2000.jpg',
+                mediaUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=800',
                 mediaType: 'image',
                 likesCount: 5,
                 comments: [{ username: 'dog_lover', text: 'איזה מתוק!' }]
             },
             {
                 author: user2._id,
-                text: 'האסקי סיבירי נהנה בשלג ❄️',
-                mediaUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Siberian-husky.jpg/800px-Siberian-husky.jpg',
+                text: 'האסקי סיבירי ❄️',
+                mediaUrl: 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=800',
                 mediaType: 'image',
                 likesCount: 12
             }
@@ -40,7 +40,7 @@ const seedData = async () => {
             { name: 'טיולי כלבים', description: 'מארגנים מפגשים בגינות כלבים', admin: user2._id }
         ]);
 
-        console.log('✅ Seed Data Inserted Successfully with Wikipedia Dogs!');
+        console.log('✅ Seed Data Inserted Successfully!');
         process.exit();
     } catch (err) {
         console.error('❌ Seed Error:', err);
