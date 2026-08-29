@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Clone - Groups</title>
     <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- CSS ו-JS של ספריית המפות Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -25,10 +29,17 @@
     <div class="main-layout">
         <section class="feed-section">
             <h2 style="margin-bottom: 15px;">קבוצות ברשת</h2>
-            <div class="sidebar-card" style="padding: 20px; border: 1px solid #dbdbdb; border-radius: 8px; background: white;">
+            
+            <div class="sidebar-card">
                 <h3>קבוצת אוהבי כלבים 🐶</h3>
-                <p style="font-size: 14px; margin-bottom: 15px; color: #8e8e8e;">מנהל: noa_z</p>
-                <button id="joinGroupBtn" type="button" style="width: 100%; padding: 10px; background-color: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">הצטרף לקבוצה</button>
+                <p style="font-size: 14px; margin-bottom: 10px;">מנהל: noa_z</p>
+                <button class="submit-btn" style="width: 100%; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">הצטרף לקבוצה</button>
+            </div>
+
+            <!-- רכיב המפה האינטראקטיבית -->
+            <div class="sidebar-card" style="margin-top: 20px;">
+                <h3>מפת קבוצות אינטראקטיבית 🗺️</h3>
+                <div id="map" style="height: 350px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
             </div>
         </section>
     </div>
@@ -37,22 +48,7 @@
         <p>&copy; 2026 Instagram Project - Groups Page</p>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('joinGroupBtn');
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    if (this.innerText.includes('הצטרף לקבוצה')) {
-                        this.innerText = 'הצטרפת לקבוצה! ✅';
-                        this.style.backgroundColor = '#262626';
-                        alert('הצטרפת בהצלחה לקבוצה!');
-                    } else {
-                        this.innerText = 'הצטרף לקבוצה';
-                        this.style.backgroundColor = '#0095f6';
-                    }
-                });
-            }
-        });
-    </script>
+    <!-- קובץ ה-JS שטוען את המפה -->
+    <script src="/js/groups.js"></script>
 </body>
 </html>
