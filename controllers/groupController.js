@@ -1,7 +1,6 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
 
-// שליפת כל הקבוצות (List)
 exports.getAllGroups = async (req, res) => {
     try {
         const groups = await Group.find().populate('admin', 'username').populate('members', 'username');
@@ -11,57 +10,69 @@ exports.getAllGroups = async (req, res) => {
     }
 };
 
-// יצירת קבוצה חדשה (Create) - סעיף 26
 exports.createGroup = async (req, res) => {
     try {
-        const { name } = req.body;
-        
-        // מציאת משתמש קיים כ-admin
-        let adminUser = await User.findOne();
+        const { name, description } = req.body;
+        const userId = req.session?.user?.id;
+
+        let adminUser = userId ? await User.findById(userId) : await User.findOne();
         if (!adminUser) {
-            return res.status(400).json({ error: 'חובה ליצור משתמש תחילה' });
+            return res.status(400).json({ error: 'חובה להיות מחובר כדי ליצור קבוצה' });
         }
 
         const newGroup = await Group.create({
             name,
+            description: description || 'קבוצה ברשת',
             admin: adminUser._id,
             members: [adminUser._id]
         });
 
-        res.status(201).json(newGroup);
+        const populatedGroup = await Group.findById(newGroup._id).populate('admin', 'username').populate('members', 'username');
+        res.status(201).json(populatedGroup);
     } catch (error) {
-        res.status(400).json({ error: 'שגיאה ביצירת הקבוצה' });
+        res.status(400).json({ error: 'שגיאה ביצירת הקבוצה או ששם הקבוצה כבר קיים' });
     }
 };
 
-// הצטרפות לקבוצה (Update)
 exports.joinGroup = async (req, res) => {
     try {
         const { groupId } = req.params;
-        const user = await User.findOne();
+        const userId = req.session?.user?.id;
+
+        let user = userId ? await User.findById(userId) : await User.findOne();
+        if (!user) return res.status(401).json({ error: 'יש להתחבר כדי להצטרף' });
 
         const group = await Group.findById(groupId);
         if (!group) return res.status(404).json({ error: 'קבוצה לא נמצאה' });
 
-        if (!group.members.includes(user._id)) {
+        const isMember = group.members.some(m => m.toString() === user._id.toString());
+        if (!isMember) {
             group.members.push(user._id);
             await group.save();
         }
 
-        res.json(group);
+        const updatedGroup = await Group.findById(groupId).populate('admin', 'username').populate('members', 'username');
+        res.json(updatedGroup);
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בהצטרפות לקבוצה' });
     }
 };
 
-// --- תוספת עבור המפה האינטראקטיבית (Leaflet) ---
+exports.deleteGroup = async (req, res) => {
+    try {
+        const { groupId } = req.params;
+        await Group.findByIdAndDelete(groupId);
+        res.json({ message: 'הקבוצה נמחקה בהצלחה' });
+    } catch (error) {
+        res.status(500).json({ error: 'שגיאה במחיקת הקבוצה' });
+    }
+};
 
-// החזרת מיקומי קבוצות עבור המפה
 exports.getGroupsLocations = async (req, res) => {
     try {
-        const groups = await Group.find({}, 'name description location lat lng members');
+        const groups = await Group.find({}, 'name description lat lng members');
         res.json(groups);
     } catch (error) {
-        res.status(500).json({ error: 'שגיאה שטעינת מיקומי הקבוצות' });
+        res.status(500).json({ error: 'שגיאה בטעינת מיקומי הקבוצות' });
     }
 };
