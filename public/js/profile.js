@@ -1,57 +1,84 @@
-document.addEventListener('DOMContentLoaded', () => {
-    fetch('/api/stats')
-        .then(res => res.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-                renderChart(data);
-            }
-        })
-        .catch(err => console.error('Error loading stats:', err));
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUserProfile();
+    await renderStatsChart();
 });
 
-function renderChart(data) {
-    // הגדלת המרווח השמאלי ל-50 כדי שיהיה מקום למספרים
-    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-    const width = 360 - margin.left - margin.right;
-    const height = 220 - margin.top - margin.bottom;
+async function loadUserProfile() {
+    try {
+        const response = await fetch('/api/api/auth/me').catch(() => fetch('/api/auth/me'));
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) {
+            window.location.href = '/login';
+            return;
+        }
 
-    d3.select("#d3-chart").html("");
+        const user = await res.json();
+        
+        const usernameEl = document.getElementById('profileUsername');
+        const userAvatarEl = document.getElementById('userAvatar');
+        
+        if (usernameEl && user.username) {
+            usernameEl.innerText = user.username;
+        }
+        if (userAvatarEl && user.username) {
+            userAvatarEl.innerText = user.username[0].toUpperCase();
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+    }
+}
 
-    const svg = d3.select("#d3-chart")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+async function renderStatsChart() {
+    const svgElement = document.getElementById('likesChart');
+    if (!svgElement) return;
+
+    let data = [];
+    try {
+        const res = await fetch('/api/stats');
+        data = await res.json();
+    } catch (err) {
+        console.error(err);
+    }
+
+    if (!data || data.length === 0) return;
+
+    const width = 500;
+    const height = 200;
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+    const svg = d3.select('#likesChart')
+        .attr('width', width)
+        .attr('height', height);
+
+    svg.selectAll('*').remove();
+
+    const maxVal = d3.max(data, d => d.count || d.likes || 0) || 5;
 
     const x = d3.scaleBand()
         .domain(data.map(d => d.day))
-        .range([0, width])
-        .padding(0.25);
+        .range([margin.left, width - margin.right])
+        .padding(0.3);
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.likes) || 50])
-        .range([height, 0]);
+        .domain([0, maxVal]).nice()
+        .range([height - margin.bottom, margin.top]);
 
-    // ציר X
-    svg.append("g")
-        .attr("transform", `translate(0,${height})`)
+    svg.append('g')
+        .selectAll('rect')
+        .data(data)
+        .join('rect')
+        .attr('x', d => x(d.day))
+        .attr('y', d => y(d.count || d.likes || 0))
+        .attr('height', d => y(0) - y(d.count || d.likes || 0))
+        .attr('width', x.bandwidth())
+        .attr('fill', '#0095f6')
+        .attr('rx', 4);
+
+    svg.append('g')
+        .attr('transform', `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x));
 
-    // ציר Y - רווחים נקיים בין המספרים
-    svg.append("g")
-        .call(d3.axisLeft(y).ticks(5));
-
-    // העמודות
-    svg.selectAll(".bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => x(d.day))
-        .attr("width", x.bandwidth())
-        .attr("y", d => y(d.likes))
-        .attr("height", d => height - y(d.likes))
-        .attr("fill", "#0095f6")
-        .attr("rx", 6);
+    svg.append('g')
+        .attr('transform', `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y).ticks(Math.min(maxVal, 5)));
 }

@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Clone - Profile</title>
+    <title>פרופיל אישי - Instagram </title>
     <link rel="stylesheet" href="/css/style.css">
-    <!-- ספריית D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-
     <header class="main-header">
         <div class="header-content">
             <h1 class="logo">Instagram</h1>
@@ -19,32 +17,39 @@
                     <li><a href="/explore">אקספלור</a></li>
                     <li><a href="/groups">קבוצות</a></li>
                     <li><a href="/profile" class="active">פרופיל</a></li>
+                    <li><a href="/stats">סטטיסטיקות</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <div class="main-layout" style="flex-direction: column; align-items: center;">
-        <section class="feed-section" style="width: 100%; max-width: 500px;">
-            <div class="post-card" style="padding: 24px; text-align: center;">
-                <div class="avatar-circle" style="width: 80px; height: 80px; margin: 0 auto 15px; font-size: 32px;">א</div>
-                <h2>אבי כהן</h2>
-                <p style="color: #8e8e8e; margin-top: 5px;">@avi_cohen</p>
-            </div>
-
-           
-            <div class="sidebar-card" style="margin-top: 20px; text-align: center;">
-                <h3>סטטיסטיקת לייקים שבועית 📊</h3>
-                <div id="d3-chart" style="margin-top: 15px;"></div>
+    <main class="main-layout" style="flex-direction: column;">
+        <section class="create-post-card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="userAvatar" class="avatar-circle" style="width: 60px; height: 60px; font-size: 24px; display: flex; align-items: center; justify-content: center; background: #0095f6; color: white; border-radius: 50%;">?</div>
+                    <div>
+                        <h2 id="profileUsername" style="margin: 0; font-size: 22px; color: #262626;">טוען...</h2>
+                        <p style="margin: 4px 0 0 0; color: #8e8e8e; font-size: 14px;">משתמש רשום ברשת החברתית</p>
+                    </div>
+                </div>
+                
+                <button onclick="window.location.href='/api/auth/logout'" style="background: #ed4956; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer;">
+                    🚪 התנתק מהחשבון
+                </button>
             </div>
         </section>
-    </div>
+
+        <section class="create-post-card">
+            <h3>📊 נתוני מעורבות שבועית </h3>
+            <svg id="likesChart" style="width: 100%; max-width: 500px; height: 200px; margin-top: 15px;"></svg>
+        </section>
+    </main>
 
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project - Profile Page</p>
+        <p>Instagram &copy; 2026</p>
     </footer>
 
-    
     <script src="/js/profile.js"></script>
 </body>
 </html>

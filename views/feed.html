@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Clone</title>
+    <title>Instagram - פיד</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
     <header class="main-header">
         <div class="header-content">
             <h1 class="logo">Instagram</h1>
-            <!-- תפריט מחובר לכל הדפים -->
             <nav class="main-nav">
                 <ul>
                     <li><a href="/" class="active">פיד</a></li>
@@ -24,64 +22,36 @@
         </div>
     </header>
 
-    <div class="main-layout">
-        
-        <aside class="sidebar-section">
-            <div class="sidebar-card">
-                <h3>קבוצות מומלצות</h3>
-                <div id="recommendedGroupsContainer">
-                    <p style="color: #8e8e8e; font-size: 13px;">טוען קבוצות...</p>
-                </div>
-            </div>
-
-            <!-- תוספת: ווידג'ט מזג אוויר בלייב מ-API חיצוני -->
-            <div class="sidebar-card" style="margin-top: 15px;">
-                <h3>מזג אוויר בלייב 🌤️</h3>
-                <div id="weather-widget">
-                    <p style="color: #8e8e8e; font-size: 13px;">טוען נתונים...</p>
-                </div>
-            </div>
-        </aside>
-
-        <section class="feed-section">
-            <!-- טופס יצירת פוסט רגיל -->
-            <div class="create-post-card">
-                <h3>שתף פוסט חדש</h3>
-                <form id="createPostForm">
-                    <select id="postTypeInput" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #dbdbdb;">
-                        <option value="text">✍️ טקסט בלבד</option>
-                        <option value="image">📷 תמונה</option>
-                        <option value="video">🎥 וידאו</option>
-                    </select>
-                    <input type="text" id="postCaptionInput" placeholder="מה תרצי לשתף?" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #dbdbdb;">
-                    <input type="url" id="postUrlInput" placeholder="הדבק קישור למדיה (תמונה/וידאו)" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #dbdbdb;">
-                    <button type="submit" class="submit-btn" style="width: 100%; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">פרסום פוסט</button>
-                </form>
-            </div>
-
-            <!-- רכיב HTML5 Canvas: סטודיו ציור וסטורי -->
-            <div class="create-post-card" style="margin-top: 20px;">
-                <h3 style="text-align: right; margin-bottom: 10px;">🎨 סטודיו ציור וסטורי (Canvas)</h3>
-                <div style="display: flex; gap: 15px; margin-bottom: 10px; align-items: center; justify-content: flex-start; flex-wrap: wrap; flex-direction: row-reverse;">
-                    <label style="display: flex; align-items: center; gap: 5px; font-size: 13px;">בחר צבע: <input type="color" id="canvasColor" value="#0095f6" style="border:none; width:30px; height:25px; cursor:pointer;"></label>
-                    <label style="display: flex; align-items: center; gap: 5px; font-size: 13px;">עובי מכחול: <input type="range" id="brushSize" min="1" max="20" value="5"></label>
-                    <button type="button" id="clearCanvasBtn" style="padding: 6px 12px; background: #ed4956; color: white; border: none; border-radius: 4px; cursor: pointer;">נקה הכל</button>
-                </div>
+    <main class="main-layout" style="max-width: 650px; margin: 20px auto;">
+    
+        <section class="create-post-card" style="margin-bottom: 24px;">
+            <h3>📝 יצירת פוסט חדש</h3>
+            <form id="createPostForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <textarea id="postContent" placeholder="מה תרצה לשתף היום?" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: vertical; min-height: 70px;"></textarea>
                 
-                <div style="border: 1px solid #dbdbdb; border-radius: 8px; overflow: hidden; background: #ffffff; display: flex; justify-content: center;">
-                    <canvas id="drawingCanvas" width="450" height="300" style="cursor: crosshair; background: #ffffff; touch-action: none; display: block;"></canvas>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label>סוג מדיה:</label>
+                    <select id="mediaType" onchange="toggleMediaInput()" style="padding: 6px; border-radius: 4px;">
+                        <option value="none">רק טקסט</option>
+                        <option value="image">תמונה</option>
+                        <option value="video">סרטון וידאו</option>
+                    </select>
                 </div>
 
-                <button type="button" id="publishCanvasBtn" style="width: 100%; margin-top: 10px; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">פרסום ציור כפוסט</button>
-            </div>
+                <input type="text" id="mediaUrl" placeholder="הדבק קישור לתמונה / סרטון" style="display: none; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
 
-            <div id="feedContainer"></div>
+                <button type="submit" style="background: #0095f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">שתף פוסט</button>
+            </form>
         </section>
 
-    </div>
+      
+        <section id="postsContainer" style="display: flex; flex-direction: column; gap: 20px;">
+            <p>טוען פוסטים...</p>
+        </section>
+    </main>
 
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project</p>
+        <p>Instagram &copy; 2026</p>
     </footer>
 
     <script src="/js/feed.js"></script>

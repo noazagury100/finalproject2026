@@ -1,335 +1,190 @@
-document.addEventListener('DOMContentLoaded', () => {
-    loadPostsViaAjax();
-    loadGroupsViaAjax();
-    setupCreatePostForm();
-    fetchWeather(); // טעינת נתוני מזג האוויר בטעינת העמוד
-    setupCanvasStudio(); // תוספת: אתחול סטודיו הציור (Canvas)
+let currentUser = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchCurrentUser();
+    loadPosts();
+
+    const createPostForm = document.getElementById('createPostForm');
+    if (createPostForm) {
+        createPostForm.addEventListener('submit', handleCreatePost);
+    }
 });
 
-
-async function loadPostsViaAjax() {
+async function fetchCurrentUser() {
     try {
-        const response = await fetch('/api/posts');
-        if (!response.ok) throw new Error('שגיאה בטעינת הפוסטים');
+        const res = await fetch('/api/auth/me');
+        if (res.ok) currentUser = await res.json();
+    } catch (err) {
+        console.error(err);
+    }
+}
 
-        const posts = await response.json();
+function toggleMediaInput() {
+    const typeSelect = document.getElementById('mediaType');
+    const input = document.getElementById('mediaUrl');
+    if (!typeSelect || !input) return;
+
+    if (typeSelect.value === 'none') {
+        input.style.display = 'none';
+        input.value = '';
+    } else {
+        input.style.display = 'block';
+        input.placeholder = typeSelect.value === 'image' ? 'הדבק קישור לתמונה' : 'הדבק קישור לסרטון';
+    }
+}
+
+async function loadPosts() {
+    try {
+        const res = await fetch('/api/posts');
+        const posts = await res.json();
         renderPosts(posts);
-    } catch (error) {
-        console.error('AJAX Error:', error);
+    } catch (err) {
+        console.error('Error loading posts:', err);
     }
 }
-
-
-async function loadGroupsViaAjax() {
-    try {
-        const response = await fetch('/api/groups');
-        if (!response.ok) return;
-
-        const groups = await response.json();
-        const container = document.getElementById('recommendedGroupsContainer');
-        if (!container) return;
-
-        if (groups.length === 0) {
-            container.innerHTML = '<p style="font-size: 13px; color: #8e8e8e; margin-top: 8px;">אין קבוצות כרגע.</p>';
-            return;
-        }
-
-        container.innerHTML = groups.map(g => `
-            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #efefef;">
-                <strong style="font-size: 14px; color: #262626;">${g.name || 'קבוצת פיתוח'}</strong>
-                <p style="font-size: 12px; color: #8e8e8e; margin: 2px 0;">${g.description || 'קבוצה ברשת'}</p>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Groups Error:', error);
-    }
-}
-
 
 function renderPosts(posts) {
-    const feedContainer = document.getElementById('feedContainer');
-    if (!feedContainer) return;
+    const container = document.getElementById('postsContainer');
+    if (!container) return;
 
-    if (posts.length === 0) {
-        feedContainer.innerHTML = '<p style="text-align:center; color:#8e8e8e; margin-top:20px;">אין פוסטים להצגה כרגע.</p>';
+    if (!posts || posts.length === 0) {
+        container.innerHTML = '<p>אין פוסטים להצגה בפיד.</p>';
         return;
     }
 
-    feedContainer.innerHTML = '';
+    container.innerHTML = posts.map(p => {
+        const authorName = p.author ? (p.author.username || p.author) : 'משתמש';
+        const isOwner = currentUser && (currentUser.username === authorName || currentUser.id === (p.author._id || p.author));
+        const postContent = (p.content && p.content !== 'undefined') ? p.content : '';
+        const likesCount = p.likesCount || 0;
+        
+        const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('he-IL', {
+            hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric'
+        }) : '';
 
-    posts.forEach(post => {
-        const article = document.createElement('article');
-        article.classList.add('post-card');
-
-        const postDate = post.createdAt 
-            ? new Date(post.createdAt).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })
-            : 'עכשיו';
-
-        let mediaHTML = '';
-        if (post.mediaType === 'image' && post.mediaUrl) {
-            mediaHTML = `<div class="post-media"><img src="${post.mediaUrl}" alt="פוסט"></div>`;
-        } else if (post.mediaType === 'video' && post.mediaUrl) {
-            mediaHTML = `
-                <div class="post-media">
-                    <video controls width="100%">
-                        <source src="${post.mediaUrl}" type="video/mp4">
-                    </video>
-                </div>`;
-        }
-
-        const commentsHTML = (post.comments || []).map(c => `
-            <div style="font-size: 13px; margin-top: 4px;">
-                <strong>${c.username || 'משתמש'}:</strong> ${c.text}
-            </div>
-        `).join('');
-
-        article.innerHTML = `
-            <div class="post-header">
-                <div class="avatar-circle">${post.author ? post.author.username[0].toUpperCase() : 'U'}</div>
-                <div>
-                    <div class="username">${post.author ? post.author.username : 'משתמש'}</div>
-                    <div style="font-size: 11px; color: #8e8e8e;">${postDate}</div>
+        const commentsHtml = (p.comments && p.comments.length > 0)
+            ? p.comments.map(c => `
+                <div style="font-size: 13px; margin-top: 4px; background: #fafafa; padding: 4px 8px; border-radius: 4px;">
+                    <strong>${c.username || 'אנונימי'}:</strong> ${c.text}
                 </div>
-            </div>
-            
-            ${mediaHTML}
+            `).join('')
+            : '';
 
-            <div class="post-body">
-                <div class="post-caption"><p>${post.text || ''}</p></div>
+        return `
+            <article class="post-card" style="border: 1px solid #dbdbdb; background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-weight: bold; color: #262626;">👤 ${authorName}</div>
+                    <small style="color: #8e8e8e; font-size: 12px;">${dateStr}</small>
+                </div>
+
+                ${postContent ? `<div style="font-size: 15px; margin-bottom: 10px; color: #333;">${postContent}</div>` : ''}
+                ${p.imageUrl ? `<img src="${p.imageUrl}" style="max-width: 100%; border-radius: 6px; margin-bottom: 10px; display: block;">` : ''}
+                ${p.videoUrl ? `<video controls style="max-width: 100%; border-radius: 6px; margin-bottom: 10px; display: block;"><source src="${p.videoUrl}" type="video/mp4"></video>` : ''}
                 
-                <div style="margin: 10px 0;">
-                    <button class="like-btn" onclick="handleLike('${post._id}')">
-                        ❤️ <span id="like-count-${post._id}">${post.likesCount || 0}</span> לייקים
+                <div style="display: flex; align-items: center; gap: 15px; margin-top: 12px; border-top: 1px solid #efefef; padding-top: 10px;">
+                    <button onclick="toggleLike('${p._id}')" style="background: none; border: none; cursor: pointer; font-size: 15px; color: #e1306c; font-weight: bold;">
+                        ❤️ <span id="like-count-${p._id}">${likesCount}</span> לייקים
                     </button>
                 </div>
 
-                <div class="comments-section" style="border-top: 1px solid #efefef; padding-top: 8px; margin-top: 10px;">
-                    <div id="comments-list-${post._id}" style="margin-bottom: 8px;">
-                        ${commentsHTML}
-                    </div>
-                    
-                    <form onsubmit="handleComment(event, '${post._id}')" style="display: flex; gap: 5px;">
-                        <input type="text" id="comment-input-${post._id}" placeholder="הוסף תגובה..." style="flex:1; padding: 6px; font-size: 13px; border: 1px solid #dbdbdb; border-radius: 4px;">
-                        <button type="submit" style="background: #0095f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">שלח</button>
+                <div style="margin-top: 10px;">
+                    ${commentsHtml}
+                    <form onsubmit="handleAddComment(event, '${p._id}')" style="display: flex; gap: 8px; margin-top: 8px;">
+                        <input type="text" id="comment-input-${p._id}" placeholder="הוסף תגובה..." style="flex: 1; padding: 6px; border: 1px solid #dbdbdb; border-radius: 4px; font-size: 13px;">
+                        <button type="submit" style="background: #0095f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;">שלח</button>
                     </form>
                 </div>
-            </div>
+
+                ${isOwner ? `
+                    <div style="display: flex; gap: 10px; margin-top: 12px; border-top: 1px dashed #dbdbdb; padding-top: 8px;">
+                        <button onclick="editPost('${p._id}', '${postContent}')" style="background: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">ערוך</button>
+                        <button onclick="deletePost('${p._id}')" style="background: #ed4956; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">מחק</button>
+                    </div>
+                ` : ''}
+            </article>
         `;
-
-        feedContainer.appendChild(article);
-    });
+    }).join('');
 }
 
+async function handleCreatePost(e) {
+    e.preventDefault();
+    const contentEl = document.getElementById('postContent');
+    const mediaTypeEl = document.getElementById('mediaType');
+    const mediaUrlEl = document.getElementById('mediaUrl');
 
-async function handleLike(postId) {
-    try {
-        const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
-        if (!response.ok) throw new Error('שגיאה בלייק');
-
-        const data = await response.json();
-        const countElement = document.getElementById(`like-count-${postId}`);
-        if (countElement) countElement.innerText = data.likesCount;
-    } catch (error) {
-        console.error('Like Error:', error);
-    }
-}
-
-
-async function handleComment(event, postId) {
-    event.preventDefault();
-    const input = document.getElementById(`comment-input-${postId}`);
-    const commentText = input ? input.value.trim() : '';
-
-    if (!commentText) {
-        alert('אנא הוסף תוכן לתגובה לפני השליחה.');
-        return;
-    }
+    const content = contentEl ? contentEl.value : '';
+    const mediaType = mediaTypeEl ? mediaTypeEl.value : 'none';
+    const mediaUrl = mediaUrlEl ? mediaUrlEl.value : '';
 
     try {
-        const response = await fetch(`/api/posts/${postId}/comment`, {
+        const res = await fetch('/api/posts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: commentText })
+            body: JSON.stringify({ content, mediaType, mediaUrl })
         });
 
-        if (!response.ok) throw new Error('שגיאה בתגובה');
-
-        input.value = '';
-        await loadPostsViaAjax();
-    } catch (error) {
-        console.error('Comment Error:', error);
-    }
-}
-
-
-function setupCreatePostForm() {
-    const createPostForm = document.getElementById('createPostForm');
-    if (!createPostForm) return;
-
-    createPostForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const text = document.getElementById('postCaptionInput')?.value.trim() || '';
-        const mediaUrl = document.getElementById('postUrlInput')?.value.trim() || '';
-        const mediaType = document.getElementById('postTypeInput')?.value || 'text';
-
-        if (!text && !mediaUrl) {
-            alert('יש להזין טקסט או קישור לתמונה/וידאו לפחות.');
-            return;
+        if (res.ok) {
+            document.getElementById('createPostForm').reset();
+            toggleMediaInput();
+            loadPosts();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'שגיאה ביצירת הפוסט');
         }
+    } catch (err) {
+        console.error(err);
+    }
+}
 
-        try {
-            const response = await fetch('/api/posts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, mediaUrl, mediaType })
-            });
-
-            if (!response.ok) throw new Error('שגיאה ביצירת פוסט');
-
-            await loadPostsViaAjax();
-            createPostForm.reset();
-        } catch (error) {
-            console.error('Create Post Error:', error);
+async function toggleLike(id) {
+    try {
+        const res = await fetch(`/api/posts/${id}/like`, { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            const countEl = document.getElementById(`like-count-${id}`);
+            if (countEl) countEl.innerText = data.likesCount;
         }
-    });
-}
-
-
-// --- ניהול רכיב ה-HTML5 Canvas (סטודיו ציור) ---
-function setupCanvasStudio() {
-    const canvas = document.getElementById("drawingCanvas");
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext("2d");
-    let isDrawing = false;
-
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    // אירועי עכבר
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseleave", stopDrawing);
-
-    // אירועי מגע (טאבלטים וטלפונים ניידים)
-    canvas.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        canvas.dispatchEvent(new MouseEvent("mousedown", {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        }));
-    });
-
-    canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        canvas.dispatchEvent(new MouseEvent("mousemove", {
-            clientX: touch.clientX,
-            clientY: touch.clientY
-        }));
-    });
-
-    canvas.addEventListener("touchend", () => {
-        canvas.dispatchEvent(new MouseEvent("mouseup", {}));
-    });
-
-    function getMousePos(e) {
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
-    }
-
-    function startDrawing(e) {
-        isDrawing = true;
-        const pos = getMousePos(e);
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-    }
-
-    function draw(e) {
-        if (!isDrawing) return;
-        const pos = getMousePos(e);
-        
-        const colorInput = document.getElementById("canvasColor");
-        const sizeInput = document.getElementById("brushSize");
-
-        ctx.strokeStyle = colorInput ? colorInput.value : "#0095f6";
-        ctx.lineWidth = sizeInput ? sizeInput.value : 5;
-
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-    }
-
-    function stopDrawing() {
-        isDrawing = false;
-        ctx.closePath();
-    }
-
-    // כפתור ניקוי הלוח
-    const clearBtn = document.getElementById("clearCanvasBtn");
-    if (clearBtn) {
-        clearBtn.addEventListener("click", () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        });
-    }
-
-    // כפתור פרסום הציור כפוסט בפיד (מתוקן לשדות הנכונים)
-    const publishBtn = document.getElementById("publishCanvasBtn");
-    if (publishBtn) {
-        publishBtn.addEventListener("click", async () => {
-            const dataURL = canvas.toDataURL("image/png");
-            
-            const postData = {
-                mediaType: 'image', // תוקן מ-type ל-mediaType כדי שהשרת יזהה זאת כתמונה
-                text: 'יצירה מסטודיו ה-Canvas 🎨✨', // תוקן מ-caption ל-text בהתאם לשאר הפוסטים במערכת
-                mediaUrl: dataURL
-            };
-
-            try {
-                const response = await fetch('/api/posts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(postData)
-                });
-
-                if (!response.ok) throw new Error("שגיאה בפרסום הציור");
-
-                alert("הציור פורסם בהצלחה לפיד!");
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                await loadPostsViaAjax();
-            } catch (err) {
-                console.error(err);
-                alert("אירעה שגיאה בפרסום הציור.");
-            }
-        });
+    } catch (err) {
+        console.error(err);
     }
 }
 
+async function handleAddComment(e, postId) {
+    e.preventDefault();
+    const inputEl = document.getElementById(`comment-input-${postId}`);
+    if (!inputEl || !inputEl.value.trim()) return;
 
-// --- קריאה בלייב ל-API חיצוני של מזג אוויר ---
-function fetchWeather() {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=32.0853&longitude=34.7818&current_weather=true')
-        .then(res => res.json())
-        .then(data => {
-            const weather = data.current_weather;
-            const container = document.getElementById('weather-widget');
-            if (container && weather) {
-                container.innerHTML = `
-                    <div style="font-size: 14px; line-height: 1.6;">
-                        <p><strong>טמפרטורה:</strong> ${weather.temperature}°C</p>
-                        <p><strong>מהירות רוח:</strong> ${weather.windspeed} km/h</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(err => {
-            console.error('Error fetching weather:', err);
-            const container = document.getElementById('weather-widget');
-            if (container) container.innerText = 'שגיאה בטעינת נתוני מזג האוויר';
+    try {
+        const res = await fetch(`/api/posts/${postId}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: inputEl.value.trim() })
         });
+
+        if (res.ok) {
+            inputEl.value = '';
+            loadPosts();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function editPost(id, oldContent) {
+    const newContent = prompt('עדכני את הפוסט:', oldContent);
+    if (!newContent) return;
+
+    const res = await fetch(`/api/posts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent })
+    });
+
+    if (res.ok) loadPosts();
+}
+
+async function deletePost(id) {
+    if (!confirm('למחוק פוסט זה?')) return;
+    const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+    if (res.ok) loadPosts();
 }
