@@ -14,7 +14,7 @@ exports.createPost = async (req, res) => {
     try {
         const { text, mediaType, mediaUrl } = req.body;
 
-        // מציאת משתמש קיים או יצירה חד פעמית למניעת שגיאות Duplicate Key ב-DB
+
         let author = await User.findOne();
         if (!author) {
             author = await User.create({

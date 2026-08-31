@@ -1,7 +1,7 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
 
-// שליפת כל הקבוצות (List)
+
 exports.getAllGroups = async (req, res) => {
     try {
         const groups = await Group.find().populate('admin', 'username').populate('members', 'username');
@@ -11,12 +11,12 @@ exports.getAllGroups = async (req, res) => {
     }
 };
 
-// יצירת קבוצה חדשה (Create) - סעיף 26
+
 exports.createGroup = async (req, res) => {
     try {
         const { name } = req.body;
         
-        // מציאת משתמש קיים כ-admin
+
         let adminUser = await User.findOne();
         if (!adminUser) {
             return res.status(400).json({ error: 'חובה ליצור משתמש תחילה' });
@@ -34,7 +34,7 @@ exports.createGroup = async (req, res) => {
     }
 };
 
-// הצטרפות לקבוצה (Update)
+
 exports.joinGroup = async (req, res) => {
     try {
         const { groupId } = req.params;
@@ -54,9 +54,7 @@ exports.joinGroup = async (req, res) => {
     }
 };
 
-// --- תוספת עבור המפה האינטראקטיבית (Leaflet) ---
 
-// החזרת מיקומי קבוצות עבור המפה
 exports.getGroupsLocations = async (req, res) => {
     try {
         const groups = await Group.find({}, 'name description location lat lng members');

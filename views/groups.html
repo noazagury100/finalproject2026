@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Clone - Groups</title>
+    <title>ניהול קבוצות - Instagram</title>
     <link rel="stylesheet" href="/css/style.css">
-    
-    <!-- CSS ו-JS של ספריית המפות Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-
     <header class="main-header">
         <div class="header-content">
             <h1 class="logo">Instagram</h1>
@@ -21,54 +18,46 @@
                     <li><a href="/explore">אקספלור</a></li>
                     <li><a href="/groups" class="active">קבוצות</a></li>
                     <li><a href="/profile">פרופיל</a></li>
-                    <li><a href="/stats">סטטיסטיקות</a></li>    
+                    <li><a href="/stats">סטטיסטיקות</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <div class="main-layout">
-        <section class="feed-section">
-            <h2 style="margin-bottom: 15px;">קבוצות ברשת</h2>
-            
-            <div class="sidebar-card">
-                <h3>קבוצת אוהבי כלבים 🐶</h3>
-                <p style="font-size: 14px; margin-bottom: 10px;">מנהל: noa_z</p>
-                <button id="joinGroupBtn" class="submit-btn" style="width: 100%; padding: 10px; background: #0095f6; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">הצטרף לקבוצה</button>
-            </div>
+    <main class="main-layout" style="flex-direction: column; gap: 20px;">
+        <section class="create-post-card">
+            <h3 id="formTitle">➕ יצירת קבוצה חדשה</h3>
+            <form id="groupForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <input type="hidden" id="groupId">
+                <input type="text" id="groupName" placeholder="שם הקבוצה" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="text" id="groupDesc" placeholder="תיאור הקבוצה" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <input type="text" id="groupAddress" placeholder="כתובת (למשל: תל אביב, ירושלים, אילת)" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <button type="submit" id="submitGroupBtn" style="background: #0095f6; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">צור קבוצה</button>
+            </form>
+        </section>
 
-            <!-- רכיב המפה האינטראקטיבית -->
-            <div class="sidebar-card" style="margin-top: 20px;">
-                <h3>מפת קבוצות אינטראקטיבית 🗺️</h3>
-                <div id="map" style="height: 350px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
+        <section class="create-post-card">
+            <h3>🔍 חיפוש קבוצות</h3>
+            <input type="text" id="searchGroupInput" onkeyup="filterGroups()" placeholder="חפשי קבוצה לפי שם, תיאור או כתובת..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-top: 8px;">
+        </section>
+
+        <section class="create-post-card">
+            <h3>🗺️ מפת מיקומי הקבוצות</h3>
+            <div id="map" style="height: 300px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
+        </section>
+
+        <section class="create-post-card">
+            <h3>👥 קבוצות קיימות ורשימת חברים</h3>
+            <div id="groupsContainer" style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
+                <p>טוען קבוצות...</p>
             </div>
         </section>
-    </div>
+    </main>
 
     <footer class="main-footer">
-        <p>&copy; 2026 Instagram Project - Groups Page</p>
+        <p>Instagram &copy; 2026</p>
     </footer>
 
-    <!-- קובץ ה-JS שטוען את המפה -->
     <script src="/js/groups.js"></script>
-
-    <!-- סקריפט הפעלה בלחיצה לכפתור הצטרפות -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btn = document.getElementById('joinGroupBtn');
-            if (btn) {
-                btn.addEventListener('click', function() {
-                    if (this.innerText.includes('הצטרף לקבוצה')) {
-                        this.innerText = 'הצטרפת לקבוצה! ✅';
-                        this.style.backgroundColor = '#262626';
-                        alert('הצטרפת בהצלחה לקבוצה!');
-                    } else {
-                        this.innerText = 'הצטרף לקבוצה';
-                        this.style.backgroundColor = '#0095f6';
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

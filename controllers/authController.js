@@ -1,6 +1,5 @@
 const User = require('../models/User');
 
-// הרשמת משתמש חדש (Register)
 exports.register = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -15,13 +14,16 @@ exports.register = async (req, res) => {
         }
 
         const newUser = await User.create({ username, password });
-        res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה', user: { id: newUser._id, username: newUser.username } });
+        
+       
+        req.session.user = { id: newUser._id, username: newUser.username };
+        
+        res.status(201).json({ message: 'ההרשמה בוצעה בהצלחה', user: req.session.user });
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בהרשמת המשתמש' });
     }
 };
 
-// התחברות משתמש (Login)
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -31,7 +33,10 @@ exports.login = async (req, res) => {
             return res.status(401).json({ error: 'שם משתמש או סיסמה שגויים' });
         }
 
-        res.json({ message: 'התחברות בוצעה בהצלחה', user: { id: user._id, username: user.username } });
+        
+        req.session.user = { id: user._id, username: user.username };
+
+        res.json({ message: 'התחברות בוצעה בהצלחה', user: req.session.user });
     } catch (error) {
         res.status(500).json({ error: 'שגיאה בהתחברות' });
     }
