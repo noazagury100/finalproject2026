@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const twitterService = require('../services/twitterService');
 
 exports.getAllPosts = async (req, res) => {
     try {
@@ -13,7 +14,6 @@ exports.getAllPosts = async (req, res) => {
 exports.createPost = async (req, res) => {
     try {
         const { text, mediaType, mediaUrl } = req.body;
-
 
         let author = await User.findOne();
         if (!author) {
@@ -30,12 +30,11 @@ exports.createPost = async (req, res) => {
             mediaUrl: mediaUrl || ''
         });
 
-        const twitterService = require('../services/twitterService');
-        await newPost.save();
         twitterService.sharePostToTwitter(`פוסט חדש ברשת החברתית: ${newPost.text}`);
 
         const populatedPost = await Post.findById(newPost._id).populate('author', 'username');
         return res.status(201).json(populatedPost);
+
     } catch (err) {
         console.error("❌ Create Post Error:", err);
         return res.status(500).json({ error: err.message });
