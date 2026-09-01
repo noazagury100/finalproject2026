@@ -18,7 +18,7 @@ function loadMediaTypeStats() {
                 return;
             }
 
-            // מיפוי מדויק של התוצאות מהשרת
+
             const formattedData = data.map(item => ({
                 label: item._id === 'image' ? 'תמונה' : item._id === 'video' ? 'וידאו' : (item._id || 'טקסט'),
                 count: item.totalPosts || item.count || item.total || 0

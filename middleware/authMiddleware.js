@@ -1,6 +1,6 @@
 const Post = require('../models/Post');
 
-// בדיקה שהמשתמש מחובר (מגן על נתיבים)
+
 exports.isAuthenticated = (req, res, next) => {
     if (req.session && req.session.user) {
         return next();
@@ -8,7 +8,7 @@ exports.isAuthenticated = (req, res, next) => {
     return res.status(401).json({ error: 'גישה דחוקה: יש להתחבר למערכת' });
 };
 
-// הרשאה: בדיקה שהמשתמש הוא בעלי הפוסט לפני עריכה/מחיקה
+
 exports.isPostOwner = async (req, res, next) => {
     try {
         const { id } = req.params;

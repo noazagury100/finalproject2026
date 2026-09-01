@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadUserProfile() {
     try {
-        const response = await fetch('/api/api/auth/me').catch(() => fetch('/api/auth/me'));
         const res = await fetch('/api/auth/me');
         if (!res.ok) {
             window.location.href = '/login';

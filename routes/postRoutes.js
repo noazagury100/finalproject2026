@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const postController = require('../controllers/postController');
+const twitterService = require('../services/twitterService');
 
-// 1. נתיבי חיפוש (חובה לפני /:id)
+
 router.get('/search/filter', postController.searchPostsByFilter);
 router.get('/search/date', postController.searchPostsByDate);
 
-// 2. שליפת כל הפוסטים
+
 router.get('/', async (req, res) => {
     try {
         const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// 3. יצירת פוסט חדש
+
 router.post('/', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
@@ -35,6 +36,10 @@ router.post('/', async (req, res) => {
         };
 
         const newPost = await Post.create(postData);
+
+
+        twitterService.sharePostToTwitter(`פוסט חדש ברשת החברתית: ${newPost.content || 'תוכן פוסט'}`);
+
         const populatedPost = await Post.findById(newPost._id).populate('author', 'username');
         res.status(201).json(populatedPost);
     } catch (err) {
@@ -42,7 +47,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// 4. הוספת לייק
+
 router.post('/:id/like', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -57,7 +62,7 @@ router.post('/:id/like', async (req, res) => {
     }
 });
 
-// 5. הוספת תגובה
+
 router.post('/:id/comment', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
@@ -82,7 +87,6 @@ router.post('/:id/comment', async (req, res) => {
     }
 });
 
-// 6. עריכת פוסט
 router.put('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -100,7 +104,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// 7. מחיקת פוסט
+
 router.delete('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);

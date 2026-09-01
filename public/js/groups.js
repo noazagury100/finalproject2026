@@ -100,7 +100,7 @@ function renderGroups(groups) {
     }).join('');
 }
 
-// המרת כתובות לסמנים במפה (Geocoding)
+
 async function updateMapMarkers(groups) {
     if (!map) return;
     markers.forEach(m => map.removeLayer(m));

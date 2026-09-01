@@ -85,11 +85,7 @@ exports.deletePost = async (req, res) => {
     }
 };
 
-// -------------------------------------------------------------
-// פונקציות חיפוש
-// -------------------------------------------------------------
 
-// חיפוש לפי מילת מפתח וסוג מדיה
 exports.searchPostsByFilter = async (req, res) => {
     try {
         const { keyword, mediaType } = req.query;
@@ -112,7 +108,7 @@ exports.searchPostsByFilter = async (req, res) => {
     }
 };
 
-// חיפוש לפי טווח תאריכים
+
 exports.searchPostsByDate = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
