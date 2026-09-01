@@ -3,7 +3,7 @@ const router = express.Router();
 const Post = require('../models/Post');
 const postController = require('../controllers/postController');
 
-// 1. נתיבי חיפוש (מוגדרים לפני /:id)
+// 1. נתיבי חיפוש (חובה לפני /:id)
 router.get('/search/filter', postController.searchPostsByFilter);
 router.get('/search/date', postController.searchPostsByDate);
 

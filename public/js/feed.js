@@ -53,6 +53,20 @@ async function loadPosts() {
     }
 }
 
+function resetSearch() {
+    const searchKeyword = document.getElementById('searchKeyword');
+    const searchMediaType = document.getElementById('searchMediaType');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+
+    if (searchKeyword) searchKeyword.value = '';
+    if (searchMediaType) searchMediaType.value = '';
+    if (startDate) startDate.value = '';
+    if (endDate) endDate.value = '';
+
+    loadPosts();
+}
+
 async function handleFilterSearch(e) {
     e.preventDefault();
     const keyword = document.getElementById('searchKeyword').value;
