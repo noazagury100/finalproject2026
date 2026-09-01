@@ -30,6 +30,10 @@ exports.createPost = async (req, res) => {
             mediaUrl: mediaUrl || ''
         });
 
+        const twitterService = require('../services/twitterService');
+        await newPost.save();
+        twitterService.sharePostToTwitter(`פוסט חדש ברשת החברתית: ${newPost.text}`);
+
         const populatedPost = await Post.findById(newPost._id).populate('author', 'username');
         return res.status(201).json(populatedPost);
     } catch (err) {
