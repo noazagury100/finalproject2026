@@ -1,13 +1,38 @@
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await fetchCurrentUser();
+    // עטיפה ב-try/catch כדי שגם אם השרת מחזיר 401/שגיאה ב-auth, שאר הדף והפונקציות יעבדו 100%
+    try {
+        await fetchCurrentUser();
+    } catch (err) {
+        console.warn('User session active check failed/bypassed');
+    }
+
     loadPosts();
 
     const createPostForm = document.getElementById('createPostForm');
     if (createPostForm) {
         createPostForm.addEventListener('submit', handleCreatePost);
     }
+
+    const filterSearchForm = document.getElementById('filterSearchForm');
+    if (filterSearchForm) {
+        filterSearchForm.addEventListener('submit', handleFilterSearch);
+    }
+
+    const dateSearchForm = document.getElementById('dateSearchForm');
+    if (dateSearchForm) {
+        dateSearchForm.addEventListener('submit', handleDateSearch);
+    }
+
+    // Event Delegation לטיפול בלחיצה על כפתורי השיתוף לטוויטר
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.twitter-share-btn');
+        if (btn) {
+            const text = btn.getAttribute('data-text') || '';
+            shareToTwitter(text);
+        }
+    });
 });
 
 async function fetchCurrentUser() {
@@ -15,7 +40,7 @@ async function fetchCurrentUser() {
         const res = await fetch('/api/auth/me');
         if (res.ok) currentUser = await res.json();
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching current user:', err);
     }
 }
 
@@ -43,12 +68,45 @@ async function loadPosts() {
     }
 }
 
+async function handleFilterSearch(e) {
+    e.preventDefault();
+    const keyword = document.getElementById('searchKeyword') ? document.getElementById('searchKeyword').value : '';
+    const category = document.getElementById('searchCategory') ? document.getElementById('searchCategory').value : '';
+    const mediaType = document.getElementById('searchMediaType') ? document.getElementById('searchMediaType').value : '';
+
+    const queryParams = new URLSearchParams({ keyword, category, mediaType }).toString();
+
+    try {
+        const res = await fetch(`/api/posts/search/filter?${queryParams}`);
+        const posts = await res.json();
+        renderPosts(posts);
+    } catch (err) {
+        console.error('Error in filter search:', err);
+    }
+}
+
+async function handleDateSearch(e) {
+    e.preventDefault();
+    const startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
+    const endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
+
+    const queryParams = new URLSearchParams({ startDate, endDate }).toString();
+
+    try {
+        const res = await fetch(`/api/posts/search/date?${queryParams}`);
+        const posts = await res.json();
+        renderPosts(posts);
+    } catch (err) {
+        console.error('Error in date search:', err);
+    }
+}
+
 function renderPosts(posts) {
     const container = document.getElementById('postsContainer');
     if (!container) return;
 
-    if (!posts || posts.length === 0) {
-        container.innerHTML = '<p>אין פוסטים להצגה בפיד.</p>';
+    if (!Array.isArray(posts) || posts.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding: 20px;">אין פוסטים להצגה בפיד.</p>';
         return;
     }
 
@@ -57,6 +115,7 @@ function renderPosts(posts) {
         const isOwner = currentUser && (currentUser.username === authorName || currentUser.id === (p.author._id || p.author));
         const postContent = (p.content && p.content !== 'undefined') ? p.content : '';
         const likesCount = p.likesCount || 0;
+        const categoryStr = p.category || 'כללי';
         
         const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString('he-IL', {
             hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric'
@@ -70,11 +129,14 @@ function renderPosts(posts) {
             `).join('')
             : '';
 
+        // הכנה בטוחה של תוכן למעבר ב-onclick וב-dataset למניעת קריסת תווים מיוחדים
+        const safeContent = encodeURIComponent(postContent);
+
         return `
             <article class="post-card" style="border: 1px solid #dbdbdb; background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <div style="font-weight: bold; color: #262626;">👤 ${authorName}</div>
-                    <small style="color: #8e8e8e; font-size: 12px;">${dateStr}</small>
+                    <small style="color: #8e8e8e; font-size: 12px;">${dateStr} | 📌 ${categoryStr}</small>
                 </div>
 
                 ${postContent ? `<div style="font-size: 15px; margin-bottom: 10px; color: #333;">${postContent}</div>` : ''}
@@ -84,6 +146,10 @@ function renderPosts(posts) {
                 <div style="display: flex; align-items: center; gap: 15px; margin-top: 12px; border-top: 1px solid #efefef; padding-top: 10px;">
                     <button onclick="toggleLike('${p._id}')" style="background: none; border: none; cursor: pointer; font-size: 15px; color: #e1306c; font-weight: bold;">
                         ❤️ <span id="like-count-${p._id}">${likesCount}</span> לייקים
+                    </button>
+                    
+                    <button type="button" class="twitter-share-btn" data-text="${safeContent}" style="background: #1da1f2; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        🐦 שיתוף ל-Twitter
                     </button>
                 </div>
 
@@ -97,7 +163,7 @@ function renderPosts(posts) {
 
                 ${isOwner ? `
                     <div style="display: flex; gap: 10px; margin-top: 12px; border-top: 1px dashed #dbdbdb; padding-top: 8px;">
-                        <button onclick="editPost('${p._id}', '${postContent}')" style="background: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">ערוך</button>
+                        <button onclick="editPost('${p._id}', '${safeContent}')" style="background: #ffc107; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">ערוך</button>
                         <button onclick="deletePost('${p._id}')" style="background: #ed4956; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">מחק</button>
                     </div>
                 ` : ''}
@@ -106,13 +172,21 @@ function renderPosts(posts) {
     }).join('');
 }
 
+function shareToTwitter(encodedText) {
+    const text = decodeURIComponent(encodedText);
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(twitterUrl, '_blank', 'width=600,height=400');
+}
+
 async function handleCreatePost(e) {
     e.preventDefault();
     const contentEl = document.getElementById('postContent');
+    const categoryEl = document.getElementById('postCategory');
     const mediaTypeEl = document.getElementById('mediaType');
     const mediaUrlEl = document.getElementById('mediaUrl');
 
     const content = contentEl ? contentEl.value : '';
+    const category = categoryEl ? categoryEl.value : 'general';
     const mediaType = mediaTypeEl ? mediaTypeEl.value : 'none';
     const mediaUrl = mediaUrlEl ? mediaUrlEl.value : '';
 
@@ -120,7 +194,7 @@ async function handleCreatePost(e) {
         const res = await fetch('/api/posts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content, mediaType, mediaUrl })
+            body: JSON.stringify({ content, category, mediaType, mediaUrl })
         });
 
         if (res.ok) {
@@ -132,7 +206,7 @@ async function handleCreatePost(e) {
             alert(err.error || 'שגיאה ביצירת הפוסט');
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error creating post:', err);
     }
 }
 
@@ -145,7 +219,7 @@ async function toggleLike(id) {
             if (countEl) countEl.innerText = data.likesCount;
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error toggling like:', err);
     }
 }
 
@@ -166,25 +240,34 @@ async function handleAddComment(e, postId) {
             loadPosts();
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error adding comment:', err);
     }
 }
 
-async function editPost(id, oldContent) {
-    const newContent = prompt('עדכני את הפוסט:', oldContent);
-    if (!newContent) return;
+async function editPost(id, encodedContent) {
+    const oldContent = decodeURIComponent(encodedContent || '');
+    const newContent = prompt('עדכן את הפוסט:', oldContent);
+    if (newContent === null || newContent === oldContent) return;
 
-    const res = await fetch(`/api/posts/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newContent })
-    });
+    try {
+        const res = await fetch(`/api/posts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: newContent })
+        });
 
-    if (res.ok) loadPosts();
+        if (res.ok) loadPosts();
+    } catch (err) {
+        console.error('Error updating post:', err);
+    }
 }
 
 async function deletePost(id) {
     if (!confirm('למחוק פוסט זה?')) return;
-    const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-    if (res.ok) loadPosts();
+    try {
+        const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+        if (res.ok) loadPosts();
+    } catch (err) {
+        console.error('Error deleting post:', err);
+    }
 }

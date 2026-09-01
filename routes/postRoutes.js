@@ -2,7 +2,58 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 
-// שליפת כל הפוסטים
+// 1. חיפוש פוסטים לפי פילטרים (מילת מפתח, קטגוריה, סוג מדיה)
+// קריטי: נתיבי חיפוש חייבים להופיע לפני נתיבי /:id
+router.get('/search/filter', async (req, res) => {
+    try {
+        const { keyword, category, mediaType } = req.query;
+        let query = {};
+
+        if (keyword) {
+            query.content = { $regex: keyword, $options: 'i' };
+        }
+        if (category) {
+            query.category = category;
+        }
+        if (mediaType) {
+            query.mediaType = mediaType;
+        }
+
+        const posts = await Post.find(query).populate('author', 'username').sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ error: 'שגיאה בחיפוש לפי פילטרים' });
+    }
+});
+
+// 2. חיפוש פוסטים לפי טווח תאריכים
+router.get('/search/date', async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let dateQuery = {};
+
+        if (startDate) {
+            dateQuery.$gte = new Date(startDate);
+        }
+        if (endDate) {
+            let end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateQuery.$lte = end;
+        }
+
+        let query = {};
+        if (startDate || endDate) {
+            query.createdAt = dateQuery;
+        }
+
+        const posts = await Post.find(query).populate('author', 'username').sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ error: 'שגיאה בחיפוש לפי תאריכים' });
+    }
+});
+
+// 3. שליפת כל הפוסטים
 router.get('/', async (req, res) => {
     try {
         const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
@@ -12,18 +63,19 @@ router.get('/', async (req, res) => {
     }
 });
 
-// יצירת פוסט חדש
+// 4. יצירת פוסט חדש (כולל שמירת category)
 router.post('/', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
             return res.status(401).json({ error: 'נא להתחבר למערכת' });
         }
 
-        const { content, mediaType, mediaUrl, imageUrl, videoUrl } = req.body;
+        const { content, category, mediaType, mediaUrl, imageUrl, videoUrl } = req.body;
         
         const postData = {
             content: content || '',
             author: req.session.user.id,
+            category: category || 'general',
             mediaType: mediaType || 'text',
             imageUrl: imageUrl || (mediaType === 'image' ? mediaUrl : ''),
             videoUrl: videoUrl || (mediaType === 'video' ? mediaUrl : '')
@@ -37,7 +89,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// הוספת לייק
+// 5. הוספת לייק
 router.post('/:id/like', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -52,7 +104,7 @@ router.post('/:id/like', async (req, res) => {
     }
 });
 
-// הוספת תגובה
+// 6. הוספת תגובה
 router.post('/:id/comment', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
@@ -77,7 +129,7 @@ router.post('/:id/comment', async (req, res) => {
     }
 });
 
-
+// 7. עריכת פוסט
 router.put('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -95,7 +147,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
+// 8. מחיקת פוסט
 router.delete('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);

@@ -24,14 +24,23 @@
 
     <main class="main-layout" style="max-width: 650px; margin: 20px auto;">
     
-        <section class="create-post-card" style="margin-bottom: 24px;">
+        <!-- יצירת פוסט חדש -->
+        <section class="create-post-card" style="margin-bottom: 24px; border: 1px solid #dbdbdb; padding: 16px; border-radius: 8px; background: #fff;">
             <h3>📝 יצירת פוסט חדש</h3>
             <form id="createPostForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <textarea id="postContent" placeholder="מה תרצה לשתף היום?" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: vertical; min-height: 70px;"></textarea>
                 
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <label>קטגוריה:</label>
+                    <select id="postCategory" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="general">כללי</option>
+                        <option value="tech">טכנולוגיה</option>
+                        <option value="news">חדשות</option>
+                        <option value="sports">ספורט</option>
+                    </select>
+
                     <label>סוג מדיה:</label>
-                    <select id="mediaType" onchange="toggleMediaInput()" style="padding: 6px; border-radius: 4px;">
+                    <select id="mediaType" onchange="toggleMediaInput()" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
                         <option value="none">רק טקסט</option>
                         <option value="image">תמונה</option>
                         <option value="video">סרטון וידאו</option>
@@ -44,7 +53,45 @@
             </form>
         </section>
 
-      
+        <!-- אזור חיפוש וסינון מתקדם -->
+        <section class="search-section" style="margin-bottom: 24px; border: 1px solid #dbdbdb; padding: 16px; border-radius: 8px; background: #f9f9f9;">
+            <h3>🔍 חיפוש וסינון פוסטים</h3>
+            
+            <form id="filterSearchForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <input type="text" id="searchKeyword" placeholder="חפש לפי מילת מפתח בתוכן..." style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                
+                <div style="display: flex; gap: 10px;">
+                    <select id="searchCategory" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="">כל הקטגוריות</option>
+                        <option value="general">כללי</option>
+                        <option value="tech">טכנולוגיה</option>
+                        <option value="news">חדשות</option>
+                        <option value="sports">ספורט</option>
+                    </select>
+
+                    <select id="searchMediaType" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="">כל סוגי המדיה</option>
+                        <option value="none">טקסט בלבד</option>
+                        <option value="image">תמונה</option>
+                        <option value="video">וידאו</option>
+                    </select>
+                </div>
+
+                <button type="submit" style="background: #262626; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">חפש לפי פילטרים</button>
+            </form>
+
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
+
+            <form id="dateSearchForm" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="flex: 1;">מתאריך: <input type="date" id="startDate" style="width: 100%; padding: 4px;"></label>
+                    <label style="flex: 1;">עד תאריך: <input type="date" id="endDate" style="width: 100%; padding: 4px;"></label>
+                </div>
+                <button type="submit" style="background: #262626; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">חפש לפי תאריכים</button>
+            </form>
+        </section>
+
+        <!-- אזור הצגת הפוסטים -->
         <section id="postsContainer" style="display: flex; flex-direction: column; gap: 20px;">
             <p>טוען פוסטים...</p>
         </section>
