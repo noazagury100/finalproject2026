@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const postController = require('../controllers/postController');
 
-// שליפת כל הפוסטים
+// 1. נתיבי חיפוש (חובה לפני /:id)
+router.get('/search/filter', postController.searchPostsByFilter);
+router.get('/search/date', postController.searchPostsByDate);
+
+// 2. שליפת כל הפוסטים
 router.get('/', async (req, res) => {
     try {
         const posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
@@ -12,7 +17,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// יצירת פוסט חדש
+// 3. יצירת פוסט חדש
 router.post('/', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
@@ -37,7 +42,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// הוספת לייק
+// 4. הוספת לייק
 router.post('/:id/like', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -52,7 +57,7 @@ router.post('/:id/like', async (req, res) => {
     }
 });
 
-// הוספת תגובה
+// 5. הוספת תגובה
 router.post('/:id/comment', async (req, res) => {
     try {
         if (!req.session || !req.session.user) {
@@ -77,7 +82,7 @@ router.post('/:id/comment', async (req, res) => {
     }
 });
 
-
+// 6. עריכת פוסט
 router.put('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -95,7 +100,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
+// 7. מחיקת פוסט
 router.delete('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
