@@ -14,7 +14,6 @@ exports.createPost = async (req, res) => {
     try {
         const { text, mediaType, mediaUrl } = req.body;
 
-
         let author = await User.findOne();
         if (!author) {
             author = await User.create({
@@ -29,10 +28,6 @@ exports.createPost = async (req, res) => {
             mediaType: mediaType || 'text',
             mediaUrl: mediaUrl || ''
         });
-
-        const twitterService = require('../services/twitterService');
-        await newPost.save();
-        twitterService.sharePostToTwitter(`פוסט חדש ברשת החברתית: ${newPost.text}`);
 
         const populatedPost = await Post.findById(newPost._id).populate('author', 'username');
         return res.status(201).json(populatedPost);
@@ -85,6 +80,60 @@ exports.deletePost = async (req, res) => {
 
         await Post.findByIdAndDelete(req.params.id);
         res.json({ message: 'הפוסט נמחק בהצלחה' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// -------------------------------------------------------------
+// פונקציות חיפוש
+// -------------------------------------------------------------
+
+// חיפוש לפי מילת מפתח וסוג מדיה
+exports.searchPostsByFilter = async (req, res) => {
+    try {
+        const { keyword, mediaType } = req.query;
+        let query = {};
+
+        if (keyword && keyword.trim() !== '') {
+            query.$or = [
+                { text: { $regex: keyword.trim(), $options: 'i' } },
+                { content: { $regex: keyword.trim(), $options: 'i' } }
+            ];
+        }
+        if (mediaType && mediaType.trim() !== '') {
+            query.mediaType = mediaType.trim();
+        }
+
+        const posts = await Post.find(query).populate('author', 'username').sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// חיפוש לפי טווח תאריכים
+exports.searchPostsByDate = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let dateQuery = {};
+
+        if (startDate && startDate.trim() !== '') {
+            dateQuery.$gte = new Date(startDate);
+        }
+        if (endDate && endDate.trim() !== '') {
+            let end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateQuery.$lte = end;
+        }
+
+        let query = {};
+        if (Object.keys(dateQuery).length > 0) {
+            query.createdAt = dateQuery;
+        }
+
+        const posts = await Post.find(query).populate('author', 'username').sort({ createdAt: -1 });
+        res.json(posts);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

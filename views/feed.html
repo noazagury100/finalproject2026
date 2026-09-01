@@ -22,35 +22,69 @@
         </div>
     </header>
 
-    <main class="main-layout" style="max-width: 650px; margin: 20px auto;">
+    <main class="main-layout" style="max-width: 650px; margin: 20px auto; padding: 0 10px;">
     
-        <section class="create-post-card" style="margin-bottom: 24px;">
-            <h3>📝 יצירת פוסט חדש</h3>
-            <form id="createPostForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-                <textarea id="postContent" placeholder="מה תרצה לשתף היום?" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: vertical; min-height: 70px;"></textarea>
+        <!-- יצירת פוסט -->
+        <section class="card" style="background: #fff; border: 1px solid #dbdbdb; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #262626;">📝 יצירת פוסט חדש</h3>
+            <form id="createPostForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                <textarea id="postContent" placeholder="מה תרצה לשתף היום?" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e6e6e6; resize: vertical; min-height: 80px; font-family: inherit; box-sizing: border-box;"></textarea>
                 
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <label>סוג מדיה:</label>
-                    <select id="mediaType" onchange="toggleMediaInput()" style="padding: 6px; border-radius: 4px;">
+                    <label style="font-size: 14px; font-weight: bold; color: #555;">סוג מדיה:</label>
+                    <select id="mediaType" onchange="toggleMediaInput()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa;">
                         <option value="none">רק טקסט</option>
                         <option value="image">תמונה</option>
                         <option value="video">סרטון וידאו</option>
                     </select>
                 </div>
 
-                <input type="text" id="mediaUrl" placeholder="הדבק קישור לתמונה / סרטון" style="display: none; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                <input type="text" id="mediaUrl" placeholder="הדבק קישור לתמונה / סרטון" style="display: none; padding: 10px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;">
 
-                <button type="submit" style="background: #0095f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">שתף פוסט</button>
+                <button type="submit" style="background: #0095f6; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;">שתף פוסט</button>
             </form>
         </section>
 
-      
-        <section id="postsContainer" style="display: flex; flex-direction: column; gap: 20px;">
-            <p>טוען פוסטים...</p>
+        <!-- אזור חיפוש מאוחד ואסתטי -->
+        <section class="card" style="background: #fff; border: 1px solid #dbdbdb; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #262626; margin-bottom: 15px;">🔍 חיפוש פוסטים</h3>
+            
+            <!-- חיפוש לפי מילות מפתח ומדיה -->
+            <form id="filterSearchForm" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="text" id="searchKeyword" placeholder="חפש לפי תוכן..." style="flex: 2; min-width: 150px; padding: 9px 12px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;">
+                
+                <select id="searchMediaType" style="flex: 1; min-width: 120px; padding: 9px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa;">
+                    <option value="">כל המדיה</option>
+                    <option value="text">טקסט</option>
+                    <option value="image">תמונה</option>
+                    <option value="video">סרטון</option>
+                </select>
+
+                <button type="submit" style="background: #0095f6; color: white; border: none; padding: 9px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">חפש</button>
+            </form>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+            <!-- חיפוש לפי תאריכים -->
+            <form id="dateSearchForm" style="display: flex; flex-direction: column; gap: 10px;">
+                <span style="font-size: 13px; font-weight: bold; color: #666;">סינון לפי טווח תאריכים:</span>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <input type="date" id="startDate" style="flex: 1; min-width: 130px; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                    <span style="color: #888;">עד</span>
+                    <input type="date" id="endDate" style="flex: 1; min-width: 130px; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                    <button type="submit" style="background: #3897f0; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">סנן</button>
+                    <button type="button" onclick="loadPosts()" style="background: #efefef; color: #333; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">איפוס</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- פיד פוסטים -->
+        <section id="postsContainer" style="display: flex; flex-direction: column; gap: 16px;">
+            <p style="text-align: center; color: #888;">טוען פוסטים...</p>
         </section>
     </main>
 
-    <footer class="main-footer">
+    <footer class="main-footer" style="text-align: center; padding: 20px; color: #8e8e8e; font-size: 13px;">
         <p>Instagram &copy; 2026</p>
     </footer>
 
